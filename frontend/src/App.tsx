@@ -5,6 +5,7 @@ import { ArrowRight, ArrowUpRight, Check, MapPin, Search, Info } from 'lucide-re
 import { Button } from './components/ui/button'
 import { BrandLogo } from './components/brand/BrandLogo'
 import { AppearanceSettings } from './components/AppearanceSettings'
+import { Account } from './components/Account'
 import { RecommendationCard } from './components/RecommendationCard'
 import type { CatalogMetadata, RecommendationResponse } from './lib/api/generated'
 import { displayDate, exampleQueries, formSchema, initialValues, sameQuery, toRequest } from './lib/matching-form'
@@ -123,7 +124,7 @@ function Matcher({ metadata }: { metadata: CatalogMetadata }) {
 export default function App() {
   const { metadata, error, retry } = useCatalog()
   return <>
-    <header className="site-header"><div className="header-inner"><BrandLogo/><div className="header-actions"><span className="header-location"><MapPin size={15} aria-hidden="true"/> Казахстан</span><AppearanceSettings/></div></div></header>
+    <header className="site-header"><div className="header-inner"><BrandLogo/><div className="header-actions"><span className="header-location"><MapPin size={15} aria-hidden="true"/> Казахстан</span><AppearanceSettings/><Account/></div></div></header>
     <main className="page">
       <section className="hero"><div><div className="eyebrow"><span/> ПОДБОР ПОДРЯДЧИКОВ ДЛЯ СОБЫТИЙ</div><h1>Ваше событие.<br/><span>Подходящие люди.</span></h1><p>Расскажите о мероприятии — сравните до трёх вариантов<br className="desktop-break"/> и узнайте, почему каждый из них вам подходит.</p></div><div className="hero-note"><span className="note-number">01 — 03</span><span>Меньше поиска.<br/>Больше ясности в выборе.</span><ArrowUpRight size={24} aria-hidden="true"/></div></section>
       {metadata ? <>

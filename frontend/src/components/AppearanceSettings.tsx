@@ -82,10 +82,11 @@ export function AppearanceSettings() {
       variant="outline"
       size="sm"
       aria-expanded={appearance}
+      aria-label="Оформление"
       aria-controls="appearance"
       onClick={() => setAppearance(open => !open)}
     >
-      <SlidersHorizontal size={16} aria-hidden="true"/> Оформление
+      <SlidersHorizontal size={16} aria-hidden="true"/><span className="appearance-label">Оформление</span>
     </Button>
     {appearance && <section className="appearance" id="appearance" aria-label="Настройки оформления">
       <div className="section-line">

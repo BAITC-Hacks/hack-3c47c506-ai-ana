@@ -1,0 +1,50 @@
+name: ai-ana
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    environment:
+      CATALOG_PATH: /app/hackathon dataset anonymized .csv
+      CATALOG_ORIGIN: original
+      AUTH_DB_PATH: /app/data/auth/accounts.sqlite3
+      AUTH_COOKIE_SECURE: ${AUTH_COOKIE_SECURE:-false}
+      AUTH_ALLOWED_ORIGINS: ${AUTH_ALLOWED_ORIGINS:-http://localhost:${APP_PORT:-8080},http://127.0.0.1:${APP_PORT:-8080}}
+    volumes:
+      - auth-data:/app/data/auth
+    expose:
+      - "8000"
+    init: true
+    restart: unless-stopped
+    stop_grace_period: 30s
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=64m
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    ports:
+      - "127.0.0.1:${APP_PORT:-8080}:8080"
+    depends_on:
+      backend:
+        condition: service_healthy
+    init: true
+    restart: unless-stopped
+    stop_grace_period: 30s
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=64m
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+
+volumes:
+  auth-data:

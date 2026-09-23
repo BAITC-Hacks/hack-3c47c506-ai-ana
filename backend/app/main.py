@@ -14,6 +14,7 @@ from .catalog import CatalogError, load_catalog
 from .explanations import build_response, clean_display
 from .matching import recommend
 from .matching_models import QueryValidationError
+from .auth import AuthStore, LOCAL_ORIGINS, install_auth
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_CATALOG = PROJECT_ROOT / 'hackathon dataset anonymized .csv'
@@ -24,9 +25,15 @@ def error_response(code: str, message: str, status: int, issues: list[dict] | No
     return JSONResponse(status_code=status, content={'code': code, 'message': message, 'issues': issues or []})
 
 
-def create_app(catalog_path: Path | None = None, origin: str | None = None) -> FastAPI:
+def create_app(catalog_path: Path | None = None, origin: str | None = None, *, auth_db_path: Path | None = None) -> FastAPI:
     @asynccontextmanager
     async def lifespan(app: FastAPI):
+        auth_path = auth_db_path or Path(os.environ.get('AUTH_DB_PATH', 'data/auth/accounts.sqlite3'))
+        app.state.auth_store = AuthStore(auth_path if auth_path.is_absolute() else PROJECT_ROOT / auth_path)
+        app.state.auth_cookie_secure = os.environ.get('AUTH_COOKIE_SECURE', 'false').lower() == 'true'
+        configured_origins = os.environ.get('AUTH_ALLOWED_ORIGINS')
+        app.state.auth_origins = ({value.strip().rstrip('/') for value in configured_origins.split(',') if value.strip()}
+                                  if configured_origins is not None else LOCAL_ORIGINS)
         configured = catalog_path or Path(os.environ.get('CATALOG_PATH', str(DEFAULT_CATALOG)))
         path = configured if configured.is_absolute() else PROJECT_ROOT / configured
         configured_origin = origin if origin is not None else os.environ.get('CATALOG_ORIGIN')
@@ -40,7 +47,8 @@ def create_app(catalog_path: Path | None = None, origin: str | None = None) -> F
         yield
         app.state.catalog = None
 
-    app = FastAPI(title='AI-ANA: подбор подрядчиков', version='0.2.0', lifespan=lifespan)
+    app = FastAPI(title='AI-ANA: подбор подрядчиков', version='0.3.0', lifespan=lifespan)
+    install_auth(app)
 
     @app.exception_handler(QueryValidationError)
     async def query_error(_request: Request, exc: QueryValidationError):
@@ -67,12 +75,20 @@ def create_app(catalog_path: Path | None = None, origin: str | None = None) -> F
             if error['type'] == 'value_error':
                 message = error['msg'].removeprefix('Value error, ')
             issues.append({'field': clean_display(field)[:120], 'message': clean_display(message)})
-        return error_response('INVALID_QUERY', 'Проверьте параметры мероприятия.', 422, issues)
+        account = _request.url.path.startswith('/api/auth/')
+        return error_response('INVALID_INPUT' if account else 'INVALID_QUERY',
+                              'Проверьте поля формы.' if account else 'Проверьте параметры мероприятия.', 422, issues)
 
     @app.exception_handler(Exception)
     async def internal_error(_request: Request, exc: Exception):
         logger.error('Ошибка обработки запроса: %s', type(exc).__name__)
-        return error_response('INTERNAL_ERROR', 'Не удалось выполнить подбор. Повторите запрос позже.', 500)
+        account = _request.url.path.startswith('/api/auth/')
+        response = error_response('INTERNAL_ERROR',
+                                  'Не удалось выполнить действие с аккаунтом. Повторите позже.' if account
+                                  else 'Не удалось выполнить подбор. Повторите запрос позже.', 500)
+        if account:
+            response.headers['Cache-Control'] = 'no-store'
+        return response
 
     errors = {503: {'model': ErrorResponse}, 500: {'model': ErrorResponse}}
 

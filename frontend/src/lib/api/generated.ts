@@ -2,6 +2,11 @@
 
 // Decimal output values are exact strings; input duration is a JSON number.
 
+export type AuthResponse = {
+  "user": (UserView | null);
+  "csrf_token": (string | null);
+};
+
 export type CalendarWindow = {
   "start": string;
   "end": string;
@@ -71,10 +76,20 @@ export type HealthResponse = {
   "catalog_version": string;
 };
 
+export type LoginInput = {
+  "email": string;
+  "password": string;
+};
+
 export type MatchCounts = {
   "group": number;
   "matched": number;
   "shown": number;
+};
+
+export type ProfileInput = {
+  "name": string;
+  "city"?: string;
 };
 
 export type QualityStats = {
@@ -142,4 +157,19 @@ export type RecommendationResponse = {
   "warnings": Array<DataWarning>;
   "eligible_ids": Array<string>;
   "exclusions": Array<Exclusion>;
+};
+
+export type RegisterInput = {
+  "name": string;
+  "city"?: string;
+  "email": string;
+  "password": string;
+};
+
+export type UserView = {
+  "id": string;
+  "email": string;
+  "name": string;
+  "city": string;
+  "created_at": string;
 };
