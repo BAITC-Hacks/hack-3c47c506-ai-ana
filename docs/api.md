@@ -46,7 +46,7 @@ curl -X POST http://localhost:8000/api/recommendations \
 
 ## Ответ
 
-`status` — MATCHED, CATEGORY_UNAVAILABLE или NO_MATCHES; все три возвращают HTTP 200. Поля `message`, `query`, `catalog_version`, `ranking_version`, `explanation_version`, `counts`, `rejections`, `cards`, `warnings` обязательны. Для будущего сравнения дат также возвращаются `eligible_ids` и `exclusions` с полным набором причин и одной основной причиной. Советов по ослаблению условий пока нет, поле suggestions не добавлено.
+`status` — MATCHED, CATEGORY_UNAVAILABLE или NO_MATCHES; все три возвращают HTTP 200. Поля `message`, `query`, `catalog_version`, `ranking_version`, `explanation_version`, `counts`, `rejections`, `cards`, `warnings` обязательны. Для реализованного в интерфейсе сравнения дат возвращаются `eligible_ids` и `exclusions` с полным набором причин и одной основной причиной. Советов по ослаблению условий пока нет, поле suggestions не добавлено.
 
 Карточка содержит id, имя, выбранную категорию (она также первая в categories), город, исходную цену и готовую подпись «от … ₸», дату и подпись доступности по календарю набора, языки, длительность, объяснение, evidence, происхождение и пометки качества. Полный description в карточку не копируется.
 

@@ -1,0 +1,6 @@
+{
+  "scope": "Существование локальных целей Markdown-ссылок в README и docs/*.md; внешние URL и фрагменты заголовков не проверялись.",
+  "documents": 10,
+  "links_checked": 91,
+  "missing": []
+}
