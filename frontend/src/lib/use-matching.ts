@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { ApiError, getCatalogMetadata, getRecommendations } from './api/client'
+import { sameQuery } from './matching-form'
 import type { CatalogMetadata, ErrorIssue, RecommendationRequest, RecommendationResponse } from './api/generated'
 
 export type RequestFailure = { message: string; issues: ErrorIssue[]; validation: boolean }
@@ -29,7 +30,7 @@ export function useCatalog() {
 }
 
 type MatchState =
-  | { status: 'initial' | 'loading' }
+  | { status: 'initial' | 'editing' | 'loading' }
   | { status: 'error' | 'validation'; error: RequestFailure }
   | { status: 'ready'; result: RecommendationResponse; previous: RecommendationResponse | null }
 
@@ -38,6 +39,7 @@ export function useMatching() {
   const active = useRef<AbortController | null>(null)
   const sequence = useRef(0)
   const previous = useRef<RecommendationResponse | null>(null)
+  const comparison = useRef<RecommendationResponse | null>(null)
   const cancel = useCallback(() => { sequence.current += 1; active.current?.abort() }, [])
   useEffect(() => cancel, [cancel])
 
@@ -53,7 +55,12 @@ export function useMatching() {
     try {
       const result = await getRecommendations(query, controller.signal)
       if (requestId !== sequence.current) return null
-      setState({ status: 'ready', result, previous: previous.current })
+      if (!previous.current || !sameQuery(previous.current.query, result.query)
+          || previous.current.catalog_version !== result.catalog_version
+          || previous.current.ranking_version !== result.ranking_version) {
+        comparison.current = previous.current
+      }
+      setState({ status: 'ready', result, previous: comparison.current })
       previous.current = result
       return null
     } catch (cause) {
@@ -66,9 +73,13 @@ export function useMatching() {
     }
   }, [cancel])
 
-  const invalidate = () => {
+  const invalidate = useCallback(() => {
     cancel()
-    setState({ status: 'validation', error: { message: 'Проверьте отмеченные поля формы и повторите подбор.', issues: [], validation: true } })
-  }
-  return { state, submit, invalidate }
+    setState({ status: 'validation', error: { message: 'Проверьте отмеченные поля формы. Подбор обновится после исправления.', issues: [], validation: true } })
+  }, [cancel])
+  const beginEditing = useCallback(() => {
+    cancel()
+    setState({ status: 'editing' })
+  }, [cancel])
+  return { state, submit, invalidate, beginEditing }
 }

@@ -61,6 +61,9 @@ export function AppearanceSettings() {
     if (!appearance) return
     closeRef.current?.focus()
     const onKeyDown = (event: KeyboardEvent) => {
+      // Let the active modal own Escape; cancelling its key event would stop
+      // the native dialog from closing and dismiss this background panel.
+      if (event.defaultPrevented || document.querySelector('dialog[open]')) return
       if (event.key === 'Escape') {
         event.preventDefault()
         closeAppearance()

@@ -1,7 +1,8 @@
+import { useCallback, useEffect, useRef } from 'react'
 import type { ReactNode } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { ArrowRight, ArrowUpRight, Check, MapPin, Search, Info } from 'lucide-react'
+import { ArrowRight, ArrowUpRight, Check, MapPin, Search, Info, RotateCcw } from 'lucide-react'
 import { Button } from './components/ui/button'
 import { BrandLogo } from './components/brand/BrandLogo'
 import { AppearanceSettings } from './components/AppearanceSettings'
@@ -58,28 +59,69 @@ function Results({ result, previous }: { result: RecommendationResponse; previou
 
 function Matcher({ metadata }: { metadata: CatalogMetadata }) {
   const form = useForm<FormValues>({ resolver: zodResolver(formSchema(metadata)), defaultValues: initialValues(metadata) })
-  const { state, submit, invalidate } = useMatching()
+  const { state, submit, invalidate, beginEditing } = useMatching()
   const values = form.watch()
-  const edited = state.status === 'ready' && !sameQuery(state.result.query, toRequest(values))
-  const loading = state.status === 'loading'
+  const filterKey = JSON.stringify(values)
+  const handledFilters = useRef(filterKey)
+  const automaticTimer = useRef<number | null>(null)
+  const generation = useRef(0)
+  const loading = state.status === 'loading' || state.status === 'editing'
   const examples = exampleQueries(metadata)
+  const { getValues, trigger, clearErrors, setError, setFocus } = form
 
-  async function search(input: FormValues) {
-    form.clearErrors()
+  const stopAutomatic = useCallback(() => {
+    generation.current += 1
+    if (automaticTimer.current !== null) window.clearTimeout(automaticTimer.current)
+    automaticTimer.current = null
+  }, [])
+
+  const performSearch = useCallback(async (input: FormValues) => {
+    clearErrors()
     const error = await submit(toRequest(input))
     if (!error?.validation) return
     // Do not attach errors from a submitted query to fields the user has since changed.
-    if (!sameQuery(toRequest(input), toRequest(form.getValues()))) return
+    if (!sameQuery(toRequest(input), toRequest(getValues()))) return
     const fields = Object.keys(input)
     let first: keyof FormValues | undefined
     for (const issue of error.issues) {
       if (!fields.includes(issue.field)) continue
       const name = issue.field as keyof FormValues
-      form.setError(name, { type: 'server', message: issue.message })
+      setError(name, { type: 'server', message: issue.message })
       first ??= name
     }
-    if (first) form.setFocus(first)
+    if (first) setFocus(first)
+  }, [clearErrors, getValues, setError, setFocus, submit])
+
+  useEffect(() => {
+    if (filterKey === handledFilters.current) return
+    handledFilters.current = filterKey
+    stopAutomatic()
+    beginEditing()
+    const requestGeneration = generation.current
+    automaticTimer.current = window.setTimeout(async () => {
+      automaticTimer.current = null
+      const valid = await trigger()
+      if (requestGeneration !== generation.current || JSON.stringify(getValues()) !== filterKey) return
+      if (valid) void performSearch(getValues())
+      else invalidate()
+    }, 400)
+    return stopAutomatic
+  }, [filterKey, beginEditing, getValues, invalidate, performSearch, stopAutomatic, trigger])
+
+  function search(input: FormValues) {
+    stopAutomatic()
+    handledFilters.current = JSON.stringify(input)
+    return performSearch(input)
   }
+
+  function applyFilters(input: FormValues) {
+    stopAutomatic()
+    handledFilters.current = JSON.stringify(input)
+    form.reset(input)
+    void performSearch(input)
+  }
+
+  const submitForm = form.handleSubmit(search, () => { stopAutomatic(); invalidate() })
 
   function field(name: keyof FormValues, label: string, children: ReactNode) {
     const error = form.formState.errors[name]
@@ -88,7 +130,7 @@ function Matcher({ metadata }: { metadata: CatalogMetadata }) {
   const attrs = (name: keyof FormValues) => ({ id: name, 'aria-invalid': !!form.formState.errors[name], 'aria-describedby': form.formState.errors[name] ? `${name}-error` : undefined, ...form.register(name) })
   return <div className="workspace">
     <aside className="form-panel"><div className="panel-heading"><span className="step">01</span><div><h2>О вашем событии</h2><p>Начнём с самого важного</p></div></div>
-      <form noValidate onSubmit={form.handleSubmit(search, invalidate)}>
+      <form noValidate onSubmit={submitForm}>
         <div className="form-fields">
           {field('city', 'Город', <select {...attrs('city')}>{metadata.dictionaries.city.map(value => <option key={value}>{value}</option>)}</select>)}
           {field('category', 'Кого ищем', <select {...attrs('category')}>{metadata.dictionaries.categories.map(value => <option key={value}>{value}</option>)}</select>)}
@@ -104,17 +146,16 @@ function Matcher({ metadata }: { metadata: CatalogMetadata }) {
             {field('language', 'Язык', <select {...attrs('language')}><option value="">Любой</option>{metadata.dictionaries.languages.map(value => <option key={value} value={value}>{capitalize(value)}</option>)}</select>)}
           </div>
         </div>
-        <div className="form-bottom"><Button type="submit" className="w-full">{loading ? 'Обновить подбор' : 'Подобрать подрядчиков'}<ArrowRight size={17} aria-hidden="true"/></Button><p>{loading ? 'Новый запрос заменит текущий.' : <>Без заявок и бронирования.<br/>Только помощь с выбором.</>}</p></div>
+        <div className="form-bottom"><p className="filter-auto-note">Фильтры применяются автоматически.</p><Button type="submit" className="w-full">{loading ? 'Обновить подбор' : 'Подобрать подрядчиков'}<ArrowRight size={17} aria-hidden="true"/></Button><Button type="button" variant="ghost" className="filter-reset w-full" onClick={() => applyFilters(initialValues(metadata))}><RotateCcw size={16} aria-hidden="true"/>Сбросить фильтры</Button><p>{loading ? 'Новый запрос заменит текущий.' : <>Без заявок и бронирования.<br/>Только помощь с выбором.</>}</p></div>
       </form>
     </aside>
     <section className="results" aria-label="Результат подбора">
       <div className="results-top"><div><div className="eyebrow small">ВАШ КОРОТКИЙ СПИСОК</div><h2>{state.status === 'ready' && state.result.status === 'MATCHED' ? 'Есть из кого выбрать' : 'Найдём подходящие варианты'}</h2></div><span className="result-counter">До 3 вариантов</span></div>
-      {examples.length > 0 && <div className="preview-controls" aria-label="Примеры запросов"><span>Попробуйте:</span>{examples.map(example => <button key={example.label} onClick={() => { form.reset(example.values); void search(example.values) }}>{example.label}</button>)}</div>}
-      {edited && <p className="submission-note" role="status">Параметры изменены. Нажмите «Подобрать подрядчиков», чтобы обновить результат. Ниже показан предыдущий запрос.</p>}
+      {examples.length > 0 && <div className="preview-controls" aria-label="Примеры запросов"><span>Попробуйте:</span>{examples.map(example => <button type="button" key={example.label} onClick={() => applyFilters(example.values)}>{example.label}</button>)}</div>}
       <div aria-live="polite" aria-busy={loading}>
-        {state.status === 'initial' && <div className="empty-state result-state" data-status="initial"><Search size={30} aria-hidden="true"/><h3>Начнём с вашего события</h3><p>Укажите параметры и нажмите «Подобрать подрядчиков». Покажем до трёх вариантов из каталога с основаниями выбора.</p></div>}
-        {loading && <div className="empty-state result-state" data-status="loading"><Search size={30} aria-hidden="true"/><h3>Подбираем подрядчиков</h3><p>Проверяем условия и занятость на выбранную дату.</p></div>}
-        {(state.status === 'error' || state.status === 'validation') && <div className="empty-state result-state" data-status={state.status} role="alert"><Info size={30} aria-hidden="true"/><h3>{state.status === 'validation' ? 'Проверьте параметры события' : 'Не удалось загрузить подбор'}</h3><p>{state.error.message}</p>{state.error.issues.length > 0 && <ul className="error-issues">{state.error.issues.filter(issue => !form.formState.errors[issue.field as keyof FormValues]).map((issue, index) => <li key={index}>{issue.message}</li>)}</ul>}<p>Исправьте параметры при необходимости и нажмите «Подобрать подрядчиков».</p></div>}
+        {state.status === 'initial' && <div className="empty-state result-state" data-status="initial"><Search size={30} aria-hidden="true"/><h3>Начнём с вашего события</h3><p>Измените параметры — фильтры применятся автоматически. Или нажмите «Подобрать подрядчиков», чтобы начать с текущих условий.</p></div>}
+        {loading && <div className="empty-state result-state" data-status={state.status}><Search size={30} aria-hidden="true"/><h3>{state.status === 'editing' ? 'Обновляем фильтры' : 'Подбираем подрядчиков'}</h3><p>{state.status === 'editing' ? 'Подбор обновится автоматически после ввода.' : 'Проверяем условия и занятость на выбранную дату.'}</p></div>}
+        {(state.status === 'error' || state.status === 'validation') && <div className="empty-state result-state" data-status={state.status} role="alert"><Info size={30} aria-hidden="true"/><h3>{state.status === 'validation' ? 'Проверьте параметры события' : 'Не удалось загрузить подбор'}</h3><p>{state.error.message}</p>{state.error.issues.length > 0 && <ul className="error-issues">{state.error.issues.filter(issue => !form.formState.errors[issue.field as keyof FormValues]).map((issue, index) => <li key={index}>{issue.message}</li>)}</ul>}<p>{state.status === 'validation' ? 'Исправьте отмеченные поля — подбор обновится автоматически.' : 'Параметры сохранены. Попробуйте выполнить запрос ещё раз.'}</p>{state.status === 'error' && <Button type="button" variant="outline" onClick={() => void submitForm()}>Повторить подбор</Button>}</div>}
         {state.status === 'ready' && <Results result={state.result} previous={state.previous}/>}
       </div>
     </section>

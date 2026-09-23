@@ -30,6 +30,26 @@ function AccountDialog({
   const [passwordVisible, setPasswordVisible] = useState(false)
   const mounted = useRef(true)
   const busy = useRef(false)
+  const previousSession = useRef(session)
+
+  function applySession(next: AccountSession) {
+    previousSession.current = next
+    onSession(next)
+  }
+
+  useEffect(() => {
+    if (previousSession.current === session) return
+    previousSession.current = session
+    // A request can finish after this dialog was closed and reopened.
+    // Follow the new session without replacing the success message of a save.
+    setView(session.user ? 'profile' : 'login')
+    setValues(current => session.user
+      ? { email: session.user.email, password: '', name: session.user.name, city: session.user.city }
+      : { ...current, password: '' })
+    setErrors({})
+    setError('')
+    setPasswordVisible(false)
+  }, [session])
 
   useEffect(() => {
     mounted.current = true
@@ -113,7 +133,7 @@ function AccountDialog({
           ? { ...values, email: values.email.trim(), name: values.name.trim(), city: values.city.trim() }
           : { name: values.name.trim(), city: values.city.trim() }
       const next = await updateAccountSession(view, input, session.csrf_token)
-      onSession(next)
+      applySession(next)
       if (!mounted.current) return
       setValues({ email: next.user?.email ?? '', password: '', name: next.user?.name ?? '', city: next.user?.city ?? '' })
       setSuccess(view === 'profile' ? 'Профиль сохранён.' : view === 'register' ? 'Аккаунт создан. Добро пожаловать!' : 'Вы вошли в аккаунт.')
@@ -123,7 +143,7 @@ function AccountDialog({
       if (!mounted.current) return
       const failure = caught instanceof AccountError ? caught : new AccountError('Не удалось выполнить действие. Попробуйте ещё раз.')
       if (failure.status === 401 && view === 'profile') {
-        onSession(emptySession)
+        applySession(emptySession)
         setValues(current => ({ ...current, password: '' }))
         setView('login')
         setError('Сессия закончилась. Войдите снова, чтобы изменить профиль.')
@@ -150,12 +170,12 @@ function AccountDialog({
     setSuccess('')
     try {
       const next = await updateAccountSession('logout', {}, session.csrf_token)
-      onSession(next)
+      applySession(next)
       if (mounted.current) onClose('Вы вышли из аккаунта.')
     } catch (caught) {
       if (!mounted.current) return
       if (caught instanceof AccountError && caught.status === 401) {
-        onSession(emptySession)
+        applySession(emptySession)
         onClose('Вы вышли из аккаунта.')
       } else {
         setError(caught instanceof Error ? caught.message : 'Не удалось выйти. Попробуйте ещё раз.')

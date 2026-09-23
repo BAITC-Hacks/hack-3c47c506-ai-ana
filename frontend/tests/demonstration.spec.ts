@@ -39,13 +39,40 @@ const scenarios = [
 const button = (page: Page) => page.getByRole('button', { name: /^(Подобрать подрядчиков|Обновить подбор)$/ })
 
 async function fillQuery(page: Page, query: RecommendationRequest) {
- await page.getByLabel('Город', { exact: true }).selectOption(query.city)
- await page.getByLabel('Кого ищем', { exact: true }).selectOption(query.category)
- await page.getByLabel('Дата события', { exact: true }).fill(query.event_date)
- await page.getByLabel('Формат', { exact: true }).selectOption(query.event_format)
- await page.getByLabel('Бюджет, ₸', { exact: true }).fill(String(query.budget_kzt))
- await page.getByLabel('Длительность, ч', { exact: true }).fill(query.duration_hours == null ? '' : String(query.duration_hours))
- await page.getByLabel('Язык', { exact: true }).selectOption(query.language ?? '')
+ const fields = [
+  { label: 'Город', value: query.city, select: true },
+  { label: 'Кого ищем', value: query.category, select: true },
+  { label: 'Дата события', value: query.event_date, select: false },
+  { label: 'Формат', value: query.event_format, select: true },
+  { label: 'Бюджет, ₸', value: String(query.budget_kzt), select: false },
+  { label: 'Длительность, ч', value: query.duration_hours == null ? '' : String(query.duration_hours), select: false },
+  { label: 'Язык', value: query.language ?? '', select: true },
+ ]
+ let changed = false
+ for (const field of fields) {
+  const control = page.getByLabel(field.label, { exact: true })
+  if (await control.inputValue() === field.value) continue
+  changed = true
+  if (field.select) await control.selectOption(field.value)
+  else await control.fill(field.value)
+ }
+ return changed
+}
+
+async function waitForAutomaticResult(page: Page, query: RecommendationRequest, expected: Baseline) {
+ const context = [
+  query.city, query.category, query.event_format.charAt(0).toUpperCase() + query.event_format.slice(1),
+  query.event_date.split('-').reverse().join('.'), `${query.budget_kzt.toLocaleString('ru-RU')} ₸`,
+  query.duration_hours ? `${Number(query.duration_hours).toLocaleString('ru-RU')} ч` : null, query.language,
+ ].filter(Boolean).join(' · ')
+ // Waiting for the final rendered query also waits through debounce and any
+ // intermediate requests made while the seven controls were being filled.
+ await expect(page.locator('.results [aria-live="polite"]')).toHaveAttribute('aria-busy', 'false')
+ await expect(page.locator('.example-context')).toHaveText(`Условия подбора: ${context}`)
+ await expect.poll(() => page.locator('.contractor-card').evaluateAll(nodes => nodes.map(node => node.getAttribute('data-profile-id'))))
+  .toEqual(expected.profiles.map(profile => profile.id))
+ if (expected.status === 'MATCHED') await expect(page.locator('.result-summary')).toBeVisible()
+ else await expect(page.locator(`.result-state[data-status="${expected.status}"]`)).toBeVisible()
 }
 
 function statistics(values: number[]) {
@@ -169,7 +196,10 @@ test('семь сценариев из исходного каталога и п
   const expected = baseline.results.find(result => result.scenario === scenario)
   expect(expected, `Эталон для ${scenario}`).toBeDefined()
   const query = JSON.parse(readFileSync(new URL(`queries/${scenario}.json`, docs), 'utf8')) as RecommendationRequest
-  await fillQuery(page, query)
+  await page.evaluate(() => { window.__stage7Probe.current = null })
+  const changed = await fillQuery(page, query)
+  // Initial defaults and identical warm repeats do not cause an automatic search.
+  if (changed) await waitForAutomaticResult(page, query, expected!)
   await page.evaluate(key => window.__stage7Probe.arm(key), `${scenario}:${repetition}`)
   const httpResponse = page.waitForResponse(response => response.url().endsWith('/api/recommendations') && response.request().method() === 'POST')
   await button(page).click()
@@ -261,7 +291,7 @@ test('семь сценариев из исходного каталога и п
    fetch_to_json: 'От вызова fetch приложением до завершения response.json(), включая локальный proxy, сеть, backend и JSON; это не чистое серверное время.',
    instrumentation: 'Обёртка fetch/response.json и MutationObserver добавляют небольшой накладной расход. Замер DOM+layout после двух кадров служит приближением отображения, не подтверждает момент вывода пикселей композитором ОС.',
    warm_definition: 'Пять одинаковых запросов после всех семи демонстрационных сценариев в той же странице и серверном процессе. Статистика только этих пяти повторов.',
-   excluded_work: 'Каталог и шрифты уже загружены. Запуск сервера, загрузка страницы/метаданных, заполнение формы, Playwright-ожидания и снимки экрана не входят в интервал submit→render.',
+   excluded_work: 'Каталог и шрифты уже загружены. Автоподбор после изменения фильтров завершается до начала ручного замера. Запуск сервера, загрузка страницы/метаданных, заполнение формы, автоматические запросы, Playwright-ожидания и снимки экрана не входят в интервал submit→render.',
    percentile_method: 'nearest rank: отсортированное значение ceil(p × n); при n=5 p95 совпадает с максимумом.',
    limitations: 'Малая локальная выборка без нагрузки, сетевого throttling и мобильного устройства. Не SLA, не характеристика публичного сервера. Первый основной запрос тоже нельзя называть холодным: сервер мог уже обслужить другие проверки.',
   },
