@@ -1,0 +1,913 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "AI-ANA: подбор подрядчиков",
+    "version": "0.2.0"
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "summary": "Health",
+        "operationId": "health_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/catalog/meta": {
+      "get": {
+        "summary": "Metadata",
+        "operationId": "metadata_api_catalog_meta_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CatalogMetadata"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/recommendations": {
+      "post": {
+        "summary": "Recommendations",
+        "operationId": "recommendations_api_recommendations_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecommendationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecommendationResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "CalendarWindow": {
+        "properties": {
+          "start": {
+            "type": "string",
+            "format": "date",
+            "title": "Start"
+          },
+          "end": {
+            "type": "string",
+            "format": "date",
+            "title": "End"
+          }
+        },
+        "type": "object",
+        "required": [
+          "start",
+          "end"
+        ],
+        "title": "CalendarWindow"
+      },
+      "CatalogDictionaries": {
+        "properties": {
+          "city": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "City"
+          },
+          "categories": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Categories"
+          },
+          "event_formats": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Event Formats"
+          },
+          "languages": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Languages"
+          }
+        },
+        "type": "object",
+        "required": [
+          "city",
+          "categories",
+          "event_formats",
+          "languages"
+        ],
+        "title": "CatalogDictionaries"
+      },
+      "CatalogMetadata": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "const": "ready",
+            "title": "Status"
+          },
+          "catalog_version": {
+            "type": "string",
+            "title": "Catalog Version"
+          },
+          "source_sha256": {
+            "type": "string",
+            "title": "Source Sha256"
+          },
+          "origin": {
+            "type": "string",
+            "enum": [
+              "original",
+              "team",
+              "demo"
+            ],
+            "title": "Origin"
+          },
+          "profile_count": {
+            "type": "integer",
+            "title": "Profile Count"
+          },
+          "calendar": {
+            "$ref": "#/components/schemas/CalendarWindow"
+          },
+          "dictionaries": {
+            "$ref": "#/components/schemas/CatalogDictionaries"
+          },
+          "quality": {
+            "$ref": "#/components/schemas/QualityStats"
+          },
+          "city_counts": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "City Counts"
+          },
+          "category_counts": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Category Counts"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "catalog_version",
+          "source_sha256",
+          "origin",
+          "profile_count",
+          "calendar",
+          "dictionaries",
+          "quality",
+          "city_counts",
+          "category_counts"
+        ],
+        "title": "CatalogMetadata"
+      },
+      "DataWarning": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "evidence": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Evidence"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "profile_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Profile Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "code",
+          "message"
+        ],
+        "title": "DataWarning"
+      },
+      "ErrorIssue": {
+        "properties": {
+          "field": {
+            "type": "string",
+            "title": "Field"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "field",
+          "message"
+        ],
+        "title": "ErrorIssue"
+      },
+      "ErrorResponse": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "enum": [
+              "INVALID_QUERY",
+              "CATALOG_LOAD_FAILED",
+              "INTERNAL_ERROR"
+            ],
+            "title": "Code"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "issues": {
+            "items": {
+              "$ref": "#/components/schemas/ErrorIssue"
+            },
+            "type": "array",
+            "title": "Issues"
+          }
+        },
+        "type": "object",
+        "required": [
+          "code",
+          "message"
+        ],
+        "title": "ErrorResponse"
+      },
+      "Evidence": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "field": {
+            "type": "string",
+            "title": "Field"
+          },
+          "profile_value": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Profile Value"
+          },
+          "requested_value": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Requested Value"
+          },
+          "quote": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Quote"
+          },
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "display_is_cleaned": {
+            "type": "boolean",
+            "title": "Display Is Cleaned",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "code",
+          "field",
+          "text"
+        ],
+        "title": "Evidence"
+      },
+      "Exclusion": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "reasons": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "BUSY_ON_DATE",
+                "UNSUPPORTED_FORMAT",
+                "OVER_BUDGET",
+                "UNSUPPORTED_LANGUAGE",
+                "DURATION_EXCEEDED"
+              ]
+            },
+            "type": "array",
+            "title": "Reasons"
+          },
+          "primary_reason": {
+            "type": "string",
+            "enum": [
+              "BUSY_ON_DATE",
+              "UNSUPPORTED_FORMAT",
+              "OVER_BUDGET",
+              "UNSUPPORTED_LANGUAGE",
+              "DURATION_EXCEEDED"
+            ],
+            "title": "Primary Reason"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "reasons",
+          "primary_reason"
+        ],
+        "title": "Exclusion"
+      },
+      "HealthResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "const": "ready",
+            "title": "Status"
+          },
+          "profile_count": {
+            "type": "integer",
+            "title": "Profile Count"
+          },
+          "catalog_version": {
+            "type": "string",
+            "title": "Catalog Version"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "profile_count",
+          "catalog_version"
+        ],
+        "title": "HealthResponse"
+      },
+      "MatchCounts": {
+        "properties": {
+          "group": {
+            "type": "integer",
+            "title": "Group"
+          },
+          "matched": {
+            "type": "integer",
+            "title": "Matched"
+          },
+          "shown": {
+            "type": "integer",
+            "title": "Shown"
+          }
+        },
+        "type": "object",
+        "required": [
+          "group",
+          "matched",
+          "shown"
+        ],
+        "title": "MatchCounts"
+      },
+      "QualityStats": {
+        "properties": {
+          "synthetic": {
+            "type": "integer",
+            "title": "Synthetic"
+          },
+          "city_imputed": {
+            "type": "integer",
+            "title": "City Imputed"
+          },
+          "price_imputed": {
+            "type": "integer",
+            "title": "Price Imputed"
+          },
+          "null_max_hours": {
+            "type": "integer",
+            "title": "Null Max Hours"
+          }
+        },
+        "type": "object",
+        "required": [
+          "synthetic",
+          "city_imputed",
+          "price_imputed",
+          "null_max_hours"
+        ],
+        "title": "QualityStats"
+      },
+      "RecommendationCard": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "anon_name": {
+            "type": "string",
+            "title": "Anon Name"
+          },
+          "category": {
+            "type": "string",
+            "title": "Category"
+          },
+          "categories": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Categories"
+          },
+          "city": {
+            "type": "string",
+            "title": "City"
+          },
+          "price_from_kzt": {
+            "type": "integer",
+            "title": "Price From Kzt"
+          },
+          "price_label": {
+            "type": "string",
+            "title": "Price Label"
+          },
+          "event_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Event Date"
+          },
+          "availability_text": {
+            "type": "string",
+            "title": "Availability Text"
+          },
+          "languages": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Languages"
+          },
+          "max_hours": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Hours"
+          },
+          "duration_text": {
+            "type": "string",
+            "title": "Duration Text"
+          },
+          "explanation": {
+            "type": "string",
+            "title": "Explanation"
+          },
+          "evidence": {
+            "items": {
+              "$ref": "#/components/schemas/Evidence"
+            },
+            "type": "array",
+            "title": "Evidence"
+          },
+          "synthetic": {
+            "type": "boolean",
+            "title": "Synthetic"
+          },
+          "city_imputed": {
+            "type": "boolean",
+            "title": "City Imputed"
+          },
+          "price_imputed": {
+            "type": "boolean",
+            "title": "Price Imputed"
+          },
+          "origin": {
+            "type": "string",
+            "enum": [
+              "original",
+              "team",
+              "demo"
+            ],
+            "title": "Origin"
+          },
+          "labels": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Labels"
+          },
+          "warnings": {
+            "items": {
+              "$ref": "#/components/schemas/DataWarning"
+            },
+            "type": "array",
+            "title": "Warnings"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "anon_name",
+          "category",
+          "categories",
+          "city",
+          "price_from_kzt",
+          "price_label",
+          "event_date",
+          "availability_text",
+          "languages",
+          "max_hours",
+          "duration_text",
+          "explanation",
+          "evidence",
+          "synthetic",
+          "city_imputed",
+          "price_imputed",
+          "origin",
+          "labels",
+          "warnings"
+        ],
+        "title": "RecommendationCard"
+      },
+      "RecommendationQuery": {
+        "properties": {
+          "city": {
+            "type": "string",
+            "title": "City"
+          },
+          "event_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Event Date"
+          },
+          "event_format": {
+            "type": "string",
+            "title": "Event Format"
+          },
+          "category": {
+            "type": "string",
+            "title": "Category"
+          },
+          "budget_kzt": {
+            "type": "integer",
+            "title": "Budget Kzt"
+          },
+          "duration_hours": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Duration Hours"
+          },
+          "language": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Language"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "city",
+          "event_date",
+          "event_format",
+          "category",
+          "budget_kzt"
+        ],
+        "title": "RecommendationQuery"
+      },
+      "RecommendationRequest": {
+        "properties": {
+          "city": {
+            "type": "string",
+            "title": "City"
+          },
+          "event_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Event Date"
+          },
+          "event_format": {
+            "type": "string",
+            "title": "Event Format"
+          },
+          "category": {
+            "type": "string",
+            "title": "Category"
+          },
+          "budget_kzt": {
+            "type": "integer",
+            "maximum": 9007199254740991.0,
+            "exclusiveMinimum": 0.0,
+            "title": "Budget Kzt"
+          },
+          "duration_hours": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string",
+                "pattern": "^\\s*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Duration Hours"
+          },
+          "language": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Language"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "city",
+          "event_date",
+          "event_format",
+          "category",
+          "budget_kzt"
+        ],
+        "title": "RecommendationRequest"
+      },
+      "RecommendationResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "MATCHED",
+              "CATEGORY_UNAVAILABLE",
+              "NO_MATCHES"
+            ],
+            "title": "Status"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "query": {
+            "$ref": "#/components/schemas/RecommendationQuery"
+          },
+          "catalog_version": {
+            "type": "string",
+            "title": "Catalog Version"
+          },
+          "ranking_version": {
+            "type": "string",
+            "title": "Ranking Version"
+          },
+          "explanation_version": {
+            "type": "string",
+            "title": "Explanation Version"
+          },
+          "counts": {
+            "$ref": "#/components/schemas/MatchCounts"
+          },
+          "rejections": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "propertyNames": {
+              "enum": [
+                "BUSY_ON_DATE",
+                "UNSUPPORTED_FORMAT",
+                "OVER_BUDGET",
+                "UNSUPPORTED_LANGUAGE",
+                "DURATION_EXCEEDED"
+              ]
+            },
+            "type": "object",
+            "title": "Rejections"
+          },
+          "cards": {
+            "items": {
+              "$ref": "#/components/schemas/RecommendationCard"
+            },
+            "type": "array",
+            "maxItems": 3,
+            "title": "Cards"
+          },
+          "warnings": {
+            "items": {
+              "$ref": "#/components/schemas/DataWarning"
+            },
+            "type": "array",
+            "title": "Warnings"
+          },
+          "eligible_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Eligible Ids"
+          },
+          "exclusions": {
+            "items": {
+              "$ref": "#/components/schemas/Exclusion"
+            },
+            "type": "array",
+            "title": "Exclusions"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "message",
+          "query",
+          "catalog_version",
+          "ranking_version",
+          "explanation_version",
+          "counts",
+          "rejections",
+          "cards",
+          "warnings",
+          "eligible_ids",
+          "exclusions"
+        ],
+        "title": "RecommendationResponse"
+      }
+    }
+  }
+}

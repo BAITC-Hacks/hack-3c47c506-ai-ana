@@ -1,0 +1,247 @@
+{
+  "status": "MATCHED",
+  "message": "Показаны 1 из 1 подходящих. Остальные профили не проходят обязательные условия. Профилей в категории города: 2. Подходят по условиям: 1. Основные причины исключения: занятость на дату — 1. Каждый исключённый профиль учтён по одной основной причине.",
+  "query": {
+    "city": "Алматы",
+    "event_date": "2026-09-23",
+    "event_format": "корпоратив",
+    "category": "Фото и видеобудки",
+    "budget_kzt": 1000000,
+    "duration_hours": "2",
+    "language": null
+  },
+  "catalog_version": "catalog-v1:aaac66e28c0de68e1da437073395c9458283126a2eccaddd3364393c311a9597",
+  "ranking_version": "price-asc-canonical-id-v1",
+  "explanation_version": "evidence-v1:1bb19284ca64cfe85a1214998a3a3c564befe99ec8631cbd9b50490c791b06a6",
+  "counts": {
+    "group": 2,
+    "matched": 1,
+    "shown": 1
+  },
+  "rejections": {
+    "BUSY_ON_DATE": 1,
+    "UNSUPPORTED_FORMAT": 0,
+    "OVER_BUDGET": 0,
+    "UNSUPPORTED_LANGUAGE": 0,
+    "DURATION_EXCEEDED": 0
+  },
+  "cards": [
+    {
+      "id": "HK-90009",
+      "anon_name": "Кадзума Сато",
+      "category": "Фото и видеобудки",
+      "categories": [
+        "Фото и видеобудки"
+      ],
+      "city": "Алматы",
+      "price_from_kzt": 300000,
+      "price_label": "от 300 000 ₸",
+      "event_date": "2026-09-23",
+      "availability_text": "Свободен 23.09.2026 по календарю датасета",
+      "languages": [
+        "русский"
+      ],
+      "max_hours": "6",
+      "duration_text": "Максимальная длительность по профилю: 6 ч",
+      "explanation": "В описании указано: «Instant Frame Booth — интерактивная фотобудка с мгновенной печатью снимков и брендированной рамкой». Начальная цена — от 300 000 ₸ при бюджете 1 000 000 ₸; формат «корпоратив» указан в профиле, дата 23.09.2026 свободна по календарю набора.",
+      "evidence": [
+        {
+          "code": "CITY",
+          "field": "city",
+          "profile_value": "Алматы",
+          "requested_value": "Алматы",
+          "quote": null,
+          "text": "Город профиля: Алматы; город запроса: Алматы.",
+          "display_is_cleaned": false
+        },
+        {
+          "code": "CATEGORY",
+          "field": "categories",
+          "profile_value": [
+            "Фото и видеобудки"
+          ],
+          "requested_value": "Фото и видеобудки",
+          "quote": null,
+          "text": "Категория «Фото и видеобудки» есть в профиле.",
+          "display_is_cleaned": false
+        },
+        {
+          "code": "AVAILABLE_ON_DATE",
+          "field": "busy_dates",
+          "profile_value": [
+            "2026-09-25",
+            "2026-09-30",
+            "2026-10-02",
+            "2026-10-04",
+            "2026-10-08",
+            "2026-10-10",
+            "2026-10-12",
+            "2026-10-16",
+            "2026-10-22",
+            "2026-10-24",
+            "2026-10-25",
+            "2026-10-27",
+            "2026-11-04",
+            "2026-11-08",
+            "2026-11-13",
+            "2026-11-14",
+            "2026-11-16",
+            "2026-11-17",
+            "2026-11-20",
+            "2026-11-25",
+            "2026-11-27",
+            "2026-11-28",
+            "2026-11-29",
+            "2026-11-30",
+            "2026-12-03",
+            "2026-12-04",
+            "2026-12-05",
+            "2026-12-06",
+            "2026-12-07",
+            "2026-12-08",
+            "2026-12-10",
+            "2026-12-11",
+            "2026-12-12",
+            "2026-12-14",
+            "2026-12-15",
+            "2026-12-16",
+            "2026-12-17",
+            "2026-12-19",
+            "2026-12-20",
+            "2026-12-22",
+            "2026-12-23",
+            "2026-12-25",
+            "2026-12-26",
+            "2026-12-27",
+            "2026-12-28",
+            "2026-12-29",
+            "2026-12-30"
+          ],
+          "requested_value": "2026-09-23",
+          "quote": null,
+          "text": "2026-09-23 отсутствует в списке занятых дат набора; личного подтверждения подрядчика нет.",
+          "display_is_cleaned": false
+        },
+        {
+          "code": "FORMAT",
+          "field": "event_formats",
+          "profile_value": [
+            "свадьба",
+            "корпоратив"
+          ],
+          "requested_value": "корпоратив",
+          "quote": null,
+          "text": "В профиле указан формат «корпоратив».",
+          "display_is_cleaned": false
+        },
+        {
+          "code": "BUDGET",
+          "field": "price_from_kzt",
+          "profile_value": 300000,
+          "requested_value": 1000000,
+          "quote": null,
+          "text": "Начальная цена от 300 000 ₸ не выше бюджета 1 000 000 ₸; итоговая стоимость не подтверждена.",
+          "display_is_cleaned": false
+        },
+        {
+          "code": "LANGUAGES",
+          "field": "languages",
+          "profile_value": [
+            "русский"
+          ],
+          "requested_value": null,
+          "quote": null,
+          "text": "Языки по профилю: русский. Ограничение по языку не задано.",
+          "display_is_cleaned": false
+        },
+        {
+          "code": "DURATION_LIMIT",
+          "field": "max_hours",
+          "profile_value": "6",
+          "requested_value": "2",
+          "quote": null,
+          "text": "Лимит по профилю: 6 ч. Запрошено 2 ч; проверено только непревышение максимума.",
+          "display_is_cleaned": false
+        },
+        {
+          "code": "DESCRIPTION_FEATURE",
+          "field": "description",
+          "profile_value": null,
+          "requested_value": null,
+          "quote": "Instant Frame Booth — интерактивная фотобудка с мгновенной печатью снимков и брендированной рамкой.",
+          "text": "Точная цитата из описания: «Instant Frame Booth — интерактивная фотобудка с мгновенной печатью снимков и брендированной рамкой.»",
+          "display_is_cleaned": false
+        }
+      ],
+      "synthetic": true,
+      "city_imputed": false,
+      "price_imputed": false,
+      "origin": "original",
+      "labels": [
+        "Синтетический профиль"
+      ],
+      "warnings": [
+        {
+          "code": "MINIMUM_DURATION",
+          "message": "В описании указана аренда от 3 часов, а максимальная длительность в профиле — 6 часов. Минимум не участвует в фильтре; возможность аренды на меньший срок нужно уточнить.",
+          "evidence": {
+            "code": "MINIMUM_DURATION",
+            "field": "description",
+            "profile_value": null,
+            "requested_value": null,
+            "quote": "Подходит для свадеб и корпоративных мероприятий, аренда от 3 часов.",
+            "text": "Точная цитата из описания: «Подходит для свадеб и корпоративных мероприятий, аренда от 3 часов.»",
+            "display_is_cleaned": false
+          },
+          "profile_id": "HK-90009"
+        }
+      ]
+    }
+  ],
+  "warnings": [
+    {
+      "code": "STARTING_PRICE",
+      "message": "Цена «от» не является итоговой стоимостью заказа.",
+      "evidence": null,
+      "profile_id": null
+    },
+    {
+      "code": "DATASET_AVAILABILITY",
+      "message": "Доступность известна только по календарю датасета и не подтверждена подрядчиком.",
+      "evidence": null,
+      "profile_id": null
+    },
+    {
+      "code": "ANONYMIZED_DATA",
+      "message": "Каталог анонимизирован; синтетические и дополненные сведения отмечены отдельно.",
+      "evidence": null,
+      "profile_id": null
+    },
+    {
+      "code": "MINIMUM_DURATION",
+      "message": "В описании указана аренда от 3 часов, а максимальная длительность в профиле — 6 часов. Минимум не участвует в фильтре; возможность аренды на меньший срок нужно уточнить.",
+      "evidence": {
+        "code": "MINIMUM_DURATION",
+        "field": "description",
+        "profile_value": null,
+        "requested_value": null,
+        "quote": "Подходит для свадеб и корпоративных мероприятий, аренда от 3 часов.",
+        "text": "Точная цитата из описания: «Подходит для свадеб и корпоративных мероприятий, аренда от 3 часов.»",
+        "display_is_cleaned": false
+      },
+      "profile_id": "HK-90009"
+    }
+  ],
+  "eligible_ids": [
+    "HK-90009"
+  ],
+  "exclusions": [
+    {
+      "id": "HK-35846",
+      "reasons": [
+        "BUSY_ON_DATE"
+      ],
+      "primary_reason": "BUSY_ON_DATE"
+    }
+  ]
+}
