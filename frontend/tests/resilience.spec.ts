@@ -1,5 +1,6 @@
 import { test, expect, type Locator, type Page, type Route } from '@playwright/test'
 import type { CatalogMetadata, RecommendationResponse } from '../src/lib/api/generated'
+import { artifactPrefix } from './artifacts'
 
 test.use({ reducedMotion: 'reduce' })
 
@@ -47,7 +48,7 @@ test('таймаут, потеря сети и HTTP 500 очищают выда�
  await page.setViewportSize({ width: 390, height: 1000 })
  await openApplication(page)
  await page.evaluate(() => document.fonts.ready)
- await page.screenshot({ path: '../docs/screenshots/stage7-initial-390.png', fullPage: true })
+ await page.screenshot({ path: `../docs/screenshots/${artifactPrefix}-initial-390.png`, fullPage: true })
  await search(page)
  await expect(cards(page)).toHaveCount(3)
  await page.clock.install()
@@ -63,12 +64,12 @@ test('таймаут, потеря сети и HTTP 500 очищают выда�
  await intercepted
  await expect(page.locator('.result-state[data-status="loading"]')).toBeVisible()
  await expect(cards(page)).toHaveCount(0)
- await page.screenshot({ path: '../docs/screenshots/stage7-loading-390.png', fullPage: true })
+ await page.screenshot({ path: `../docs/screenshots/${artifactPrefix}-loading-390.png`, fullPage: true })
  // Exercise the application's real abort deadline without spending twelve wall-clock seconds.
  await page.clock.runFor(12_001)
  await expect(page.locator('.result-state[data-status="error"]')).toContainText('Сервер долго не отвечает')
  await expect(cards(page)).toHaveCount(0)
- await page.screenshot({ path: '../docs/screenshots/stage7-timeout-390.png', fullPage: true })
+ await page.screenshot({ path: `../docs/screenshots/${artifactPrefix}-timeout-390.png`, fullPage: true })
  // The browser has already cancelled this fetch; release any remaining intercepted route.
  await stalledRoute?.abort().catch(() => {})
  await search(page)

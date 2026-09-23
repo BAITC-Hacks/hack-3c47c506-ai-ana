@@ -13,6 +13,8 @@ from .matching_models import MatchResult, RecommendationQuery
 from .models import Profile, decimal_text, normalize_key
 
 FACTS_PATH = Path(__file__).parent / 'data' / 'profile_facts.json'
+# Version both the reviewed facts and the rules that turn them into sentences.
+EXPLANATION_VERSION = 'evidence-v2'
 DECORATION = re.compile('[\U0001F000-\U0001FAFF\u2600-\u27BF\uFE0E\uFE0F\u200D\u20E3\u2022\u25A0\u25AA\u25CF\u231A\u231B\u2328\u23CF\u23E9-\u23F3\u23F8-\u23FA\u2B05-\u2B07\u2B1B-\u2B1C\u2B50\u2B55]')
 
 
@@ -41,9 +43,9 @@ def _facts_bundle() -> tuple[dict[str, Any], str]:
         profiles = bundle.get('profiles')
         if bundle.get('version') != 'reviewed-facts-v1' or not isinstance(profiles, dict):
             raise ValueError('Неверная схема разметки')
-        return profiles, 'evidence-v1:' + hashlib.sha256(raw).hexdigest()
+        return profiles, EXPLANATION_VERSION + ':' + hashlib.sha256(raw).hexdigest()
     except (OSError, ValueError, UnicodeError, AttributeError, RecursionError):
-        return {}, 'evidence-v1:no-reviewed-facts'
+        return {}, EXPLANATION_VERSION + ':no-reviewed-facts'
 
 
 def _reviewed_entry(profile: Profile) -> dict[str, Any] | None:
@@ -129,13 +131,26 @@ def _card(profile: Profile, query: RecommendationQuery, catalog: Catalog) -> Rec
         prefix = 'В описании указано' if not fact.display_is_cleaned else 'В описании указано (оформление очищено)'
         feature = f'{prefix}: «{clean_display(quote).rstrip(".!?")}».'
     else:
-        feature = f'В профиле указаны языки: {clean_display(", ".join(profile.languages))}'
+        feature = (f'В профиле указаны языки: {clean_display(", ".join(profile.languages))}'
+                   if profile.languages else 'В профиле не указаны языки')
+        feature += f'; форматы: {clean_display(", ".join(profile.event_formats))}'
         feature += ('; услуга не привязана к длительности присутствия.' if profile.max_hours is None
                     else f'; максимальная длительность — {_hours(profile.max_hours)} ч.')
         if not any(w.code == 'DESCRIPTION_LIMITED' for w in warnings):
             warnings.append(DataWarning(code='DESCRIPTION_LIMITED', message='Для текущей версии описания нет проверенного отличительного фрагмента; показаны только структурированные сведения.', profile_id=profile.id))
-    fit = (f'Начальная цена — от {_money(profile.price_from_kzt)} ₸ при бюджете {_money(query.budget_kzt)} ₸; '
-           f'формат «{clean_display(query.event_format)}» указан в профиле, дата {query.event_date.strftime("%d.%m.%Y")} свободна по календарю набора.')
+    conditions = [
+        f'Начальная цена — от {_money(profile.price_from_kzt)} ₸ при бюджете {_money(query.budget_kzt)} ₸',
+        f'формат «{clean_display(query.event_format)}» указан в профиле',
+    ]
+    if query.language is not None:
+        conditions.append(f'запрошенный язык «{clean_display(query.language)}» есть в профиле')
+    if query.duration_hours is not None:
+        if profile.max_hours is None:
+            conditions.append('услуга не привязана к длительности присутствия, поэтому фильтр часов не применяется')
+        else:
+            conditions.append(f'запрошенные {_hours(query.duration_hours)} ч не превышают лимит {_hours(profile.max_hours)} ч')
+    conditions.append(f'дата {query.event_date.strftime("%d.%m.%Y")} свободна по календарю набора')
+    fit = '; '.join(conditions) + '.'
     labels = []
     if profile.synthetic:
         labels.append('Синтетический профиль')
@@ -168,6 +183,16 @@ def build_response(result: MatchResult, catalog: Catalog) -> RecommendationRespo
     for card, quote in zip(cards, quotes):
         if quote is not None and quotes.count(quote) > 1:
             card.warnings.append(DataWarning(code='SHARED_DESCRIPTION', message='Этот фрагмент одинаков у нескольких показанных профилей; сравнивайте подтверждённые условия.', profile_id=card.id))
+    # An unknown/changed catalog can contain truly indistinguishable records.
+    # Do not invent qualities or hide otherwise eligible candidates to force uniqueness.
+    texts = [normalize_key(card.explanation) for card in cards]
+    for card, text in zip(cards, texts):
+        if texts.count(text) > 1:
+            card.warnings.append(DataWarning(
+                code='SHARED_EXPLANATION',
+                message='Подтверждённые сведения для этого запроса совпадают с другой показанной карточкой; данных для содержательного различия недостаточно.',
+                profile_id=card.id,
+            ))
     warnings = [
         DataWarning(code='STARTING_PRICE', message='Цена «от» не является итоговой стоимостью заказа.'),
         DataWarning(code='DATASET_AVAILABILITY', message='Доступность известна только по календарю датасета и не подтверждена подрядчиком.'),

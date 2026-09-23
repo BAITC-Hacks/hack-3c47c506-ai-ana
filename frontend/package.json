@@ -8,7 +8,8 @@
     "build": "tsc -b && vite build",
     "preview": "vite preview --host 0.0.0.0",
     "test:e2e": "playwright test",
-    "test:stage7": "npm run build && PLAYWRIGHT_PRODUCTION=1 playwright test"
+    "test:stage7": "npm run build && PLAYWRIGHT_PRODUCTION=1 playwright test",
+    "test:requirements": "npm run build && PLAYWRIGHT_PRODUCTION=1 PLAYWRIGHT_ARTIFACT_PREFIX=requirements playwright test"
   },
   "dependencies": {
     "@fontsource-variable/manrope": "5.3.0",

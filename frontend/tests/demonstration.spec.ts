@@ -3,6 +3,7 @@ import { readFileSync, mkdirSync, writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { platform, release, arch, cpus } from 'node:os'
 import type { RecommendationRequest, RecommendationResponse } from '../src/lib/api/generated'
+import { artifactPrefix } from './artifacts'
 
 type Baseline = {
  scenario: string
@@ -222,6 +223,7 @@ test('семь сценариев из исходного каталога и п
   const fetched = measured.fetch_started_at_ms!
   const json = measured.json_ready_at_ms!
   const rendered = measured.rendered_at_ms!
+  expect(rendered - submitted, 'Подбор с отображением укладывается в ориентир 10 секунд').toBeLessThan(10_000)
   expect(fetched).toBeGreaterThanOrEqual(submitted)
   expect(json).toBeGreaterThanOrEqual(fetched)
   expect(rendered).toBeGreaterThanOrEqual(json)
@@ -252,7 +254,7 @@ test('семь сценариев из исходного каталога и п
   }
   if (kind === 'scenario') {
    if (body.cards.length) await page.locator('.contractor-card').first().locator('summary').click()
-   await page.screenshot({ path: fileURLToPath(new URL(`screenshots/stage7-${scenario}.png`, docs)), fullPage: true })
+   await page.screenshot({ path: fileURLToPath(new URL(`screenshots/${artifactPrefix}-${scenario}.png`, docs)), fullPage: true })
   }
   if (scenario === 'corporate-host') {
    if (original) expect(body).toEqual(original)
@@ -273,7 +275,7 @@ test('семь сценариев из исходного каталога и п
  expect(pageErrors).toEqual([])
  const warmed = samples.filter(sample => sample.kind === 'warm-repeat')
  const report = {
-  scope: 'Этап 7: production frontend → HTTP API → исходный CSV, 7 сценариев и 5 повторов основного запроса',
+  scope: `${artifactPrefix}: production frontend → HTTP API → исходный CSV, 7 сценариев и 5 повторов основного запроса`,
   generated_at: new Date().toISOString(),
   environment: {
    frontend_mode: 'vite preview (production build)', base_url: baseURL,
@@ -305,5 +307,5 @@ test('семь сценариев из исходного каталога и п
   },
   samples,
  }
- writeFileSync(new URL('stage7-browser-report.json', docs), JSON.stringify(report, null, 2) + '\n')
+ writeFileSync(new URL(`${artifactPrefix}-browser-report.json`, docs), JSON.stringify(report, null, 2) + '\n')
 })

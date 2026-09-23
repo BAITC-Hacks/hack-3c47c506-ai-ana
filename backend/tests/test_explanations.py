@@ -3,7 +3,9 @@
 from dataclasses import replace
 from datetime import date, timedelta
 from decimal import Decimal
+from itertools import combinations
 from pathlib import Path
+import re
 
 import pytest
 
@@ -58,6 +60,15 @@ def warning(card, code):
     return next(item for item in card['warnings'] if item['code'] == code)
 
 
+def without_identity(text, profiles):
+    """The DoD comparison must not be satisfied by adding names or IDs."""
+    text = clean_display(text).casefold()
+    identities = {value.casefold() for profile in profiles for value in (profile.id, profile.anon_name)}
+    for identity in sorted(identities, key=len, reverse=True):
+        text = text.replace(identity, '')
+    return ' '.join(re.findall(r'\w+', text))
+
+
 def test_baseline_cards_keep_individual_supported_explanations(catalog):
     result = response(MAIN_QUERY, catalog).model_dump(mode='json')
     cards = result['cards']
@@ -83,21 +94,26 @@ def test_baseline_cards_keep_individual_supported_explanations(catalog):
 
 def test_every_original_profile_has_source_bound_curated_evidence(catalog):
     assert len(catalog.profiles) == 66
-    limited_descriptions = {'HK-25279', 'HK-92824', 'HK-36965', 'HK-39301', 'HK-19103'}
+    reviewed_count = 0
     for profile in catalog.profiles:
         original, card = card_for(catalog, profile.id)
         source_fields = original.model_dump(mode='json')
         source_fields['busy_dates'] = sorted(source_fields['busy_dates'])
         evidence = description_evidence(card)
-        if profile.id in limited_descriptions:
+        # A short source can supply a reviewed fragment while still carrying an
+        # honest limitation warning. Pure advertising does not become a fact
+        # just to make explanations textually different.
+        if profile.id == 'HK-25279':
             assert not evidence
             assert warning(card, 'DESCRIPTION_LIMITED')['message']
         else:
             assert evidence, profile.id
-            assert not any(item['code'] == 'DESCRIPTION_LIMITED' for item in card['warnings']), profile.id
+            reviewed_count += 1
         for item in evidence:
             assert item['quote'] in original.description, profile.id
             assert item['text'] and item['code'], profile.id
+            assert without_identity(item['quote'], (profile,)), profile.id
+            assert clean_display(item['quote']).rstrip('.!?') in card['explanation'], profile.id
         for item in card['evidence']:
             if item['field'] != 'description':
                 assert item['profile_value'] == source_fields[item['field']], (profile.id, item['field'])
@@ -110,6 +126,97 @@ def test_every_original_profile_has_source_bound_curated_evidence(catalog):
         assert card['synthetic'] is profile.synthetic
         assert card['city_imputed'] is profile.city_imputed
         assert card['price_imputed'] is profile.price_imputed
+        # Dates/decimal numbers are not sentence boundaries; the visible
+        # explanation must still fit the task's one-to-two sentence contract.
+        assert 1 <= len(re.findall(r'[.!?](?=\s|$)', card['explanation'])) <= 2, profile.id
+    assert reviewed_count == 65
+
+
+def test_national_ensemble_explanations_differ_without_names_even_at_equal_prices(catalog):
+    query = {
+        'city': 'Алматы', 'category': 'Национальный ансамбль',
+        'event_date': '2026-09-24', 'event_format': 'свадьба', 'budget_kzt': 500_000,
+    }
+    result = response(query, catalog)
+    cards = result.model_dump(mode='json')['cards']
+    assert [card['id'] for card in cards] == ['HK-19103', 'HK-39301', 'HK-92824']
+    assert cards[1]['price_from_kzt'] == cards[2]['price_from_kzt'] == 500_000
+    assert len({without_identity(card['explanation'], catalog.profiles) for card in cards}) == 3
+    quotes = [description_evidence(card)[0]['quote'] for card in cards]
+    assert len({without_identity(quote, catalog.profiles) for quote in quotes}) == 3
+    for card in cards:
+        assert not any(item['code'] == 'SHARED_EXPLANATION' for item in card['warnings'])
+    assert response(dict(query), catalog).model_dump_json() == result.model_dump_json()
+    assert response(query, replace(catalog, profiles=tuple(reversed(catalog.profiles)))).model_dump_json() == result.model_dump_json()
+
+
+def test_every_coeligible_pair_has_distinct_source_features_over_the_calendar(catalog):
+    """Check all potentially co-shown pairs, not just the cheapest top three.
+
+    Any pair shown together must share a city, category, format and free day.
+    Optional filters and budget only remove candidates. Once its source-bound
+    feature is distinct, changing those constraints cannot make it identical.
+    Thus one witness query per possible pair covers all 100 calendar days and
+    budget/language/duration subsets without millions of repeated requests.
+    This proves text differentiation; it does not replace editorial review of
+    whether a quoted claim is useful, credible or appropriately qualified.
+    """
+    days = {date(2026, 9, 23) + timedelta(days=offset) for offset in range(100)}
+    checked = set()
+    for left, right in combinations(catalog.profiles, 2):
+        categories = sorted(set(left.categories) & set(right.categories))
+        formats = sorted(set(left.event_formats) & set(right.event_formats))
+        free_days = days - set(left.busy_dates) - set(right.busy_dates)
+        if left.city != right.city or not categories or not formats or not free_days:
+            continue
+        pair = (left, right)
+        query = {
+            'city': left.city, 'category': categories[0],
+            'event_format': formats[0], 'event_date': min(free_days).isoformat(),
+            'budget_kzt': max(left.price_from_kzt, right.price_from_kzt),
+        }
+        cards = response(query, replace(catalog, profiles=pair)).model_dump(mode='json')['cards']
+        assert len(cards) == 2, (left.id, right.id)
+        features = [
+            description_evidence(card)[0]['quote'] if description_evidence(card)
+            else card['explanation'].split(' Начальная цена', 1)[0]
+            for card in cards
+        ]
+        assert len({without_identity(feature, catalog.profiles) for feature in features}) == 2, (left.id, right.id)
+        assert len({without_identity(card['explanation'], catalog.profiles) for card in cards}) == 2, (left.id, right.id)
+        checked.add(frozenset((left.id, right.id)))
+    assert frozenset(('HK-39301', 'HK-92824')) in checked
+
+
+def test_requested_language_and_duration_are_explained_in_the_card(catalog):
+    _, card = card_for(catalog, 'HK-88430', language='русский', duration_hours=2.5)
+    assert 'запрошенный язык «русский»' in card['explanation']
+    assert 'запрошенные 2.5 ч не превышают лимит 6 ч' in card['explanation']
+    _, independent = card_for(catalog, 'HK-90004', language='русский', duration_hours=5)
+    assert 'не привязана к длительности присутствия' in independent['explanation']
+    assert 'фильтр часов не применяется' in independent['explanation']
+
+
+def test_unknown_indistinguishable_profiles_are_kept_and_explicitly_warned(catalog):
+    source = next(profile for profile in catalog.profiles if profile.id == 'HK-88430')
+    profiles = tuple(source.model_copy(update={
+        'id': f'NEW-IDENTICAL-{index}', 'anon_name': f'Новый подрядчик {index}',
+        'description': 'Дополнительные проверенные сведения отсутствуют.',
+    }) for index in (1, 2))
+    unknown_catalog = replace(catalog, profiles=profiles)
+    result = response(MAIN_QUERY, unknown_catalog).model_dump(mode='json')
+    assert result['status'] == 'MATCHED'
+    assert result['counts'] == {'group': 2, 'matched': 2, 'shown': 2}
+    assert [card['id'] for card in result['cards']] == ['NEW-IDENTICAL-1', 'NEW-IDENTICAL-2']
+    assert result['cards'][0]['explanation'] == result['cards'][1]['explanation']
+    for card in result['cards']:
+        assert not description_evidence(card)
+        assert warning(card, 'DESCRIPTION_LIMITED')['message']
+        limitation = warning(card, 'SHARED_EXPLANATION')
+        assert 'данных' in limitation['message'].lower()
+        assert 'недостаточно' in limitation['message'].lower()
+        assert limitation['profile_id'] == card['id']
+        assert limitation in result['warnings']
 
 
 def test_minimum_duration_warns_without_adding_a_hidden_filter(catalog):

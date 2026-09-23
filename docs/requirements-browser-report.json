@@ -1,0 +1,662 @@
+{
+  "scope": "requirements: production frontend → HTTP API → исходный CSV, 7 сценариев и 5 повторов основного запроса",
+  "generated_at": "2026-09-23T12:49:54.325Z",
+  "environment": {
+    "frontend_mode": "vite preview (production build)",
+    "base_url": "http://127.0.0.1:4174",
+    "browser": "chromium",
+    "browser_version": "153.0.8010.12",
+    "user_agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36",
+    "os": {
+      "platform": "linux",
+      "release": "6.12.107+deb13-amd64",
+      "architecture": "x64",
+      "cpu": "AMD Ryzen 7 5700U with Radeon Graphics"
+    },
+    "node_version": "v20.19.2",
+    "viewport": {
+      "width": 1440,
+      "height": 1000
+    },
+    "page_settings": {
+      "locale": "en-US",
+      "timezone": "Asia/Almaty",
+      "accent": "#2563EB"
+    },
+    "workers": 1,
+    "network": "Локальный браузер → Vite preview proxy → локальный Uvicorn; без искусственных задержек и внешних API."
+  },
+  "timing_method": {
+    "clock": "performance.now() внутри одной браузерной страницы",
+    "performance_time_origin_ms": 1790167783549.1,
+    "submit_to_render": "От capture-события submit до появления ожидаемых карточек/пустого состояния в DOM, двух requestAnimationFrame и синхронного чтения layout. Не включает ожидания и заполнение формы через Playwright.",
+    "fetch_to_json": "От вызова fetch приложением до завершения response.json(), включая локальный proxy, сеть, backend и JSON; это не чистое серверное время.",
+    "instrumentation": "Обёртка fetch/response.json и MutationObserver добавляют небольшой накладной расход. Замер DOM+layout после двух кадров служит приближением отображения, не подтверждает момент вывода пикселей композитором ОС.",
+    "warm_definition": "Пять одинаковых запросов после всех семи демонстрационных сценариев в той же странице и серверном процессе. Статистика только этих пяти повторов.",
+    "excluded_work": "Каталог и шрифты уже загружены. Автоподбор после изменения фильтров завершается до начала ручного замера. Запуск сервера, загрузка страницы/метаданных, заполнение формы, автоматические запросы, Playwright-ожидания и снимки экрана не входят в интервал submit→render.",
+    "percentile_method": "nearest rank: отсортированное значение ceil(p × n); при n=5 p95 совпадает с максимумом.",
+    "limitations": "Малая локальная выборка без нагрузки, сетевого throttling и мобильного устройства. Не SLA, не характеристика публичного сервера. Первый основной запрос тоже нельзя называть холодным: сервер мог уже обслужить другие проверки."
+  },
+  "source_baseline": "docs/matching-report.json; версии каталога и ранжирования, статус, количества, все eligible_ids и показанные ID проверены для каждого сценария.",
+  "repeated_response_equal": true,
+  "first_page_request": {
+    "scenario": "corporate-host",
+    "kind": "scenario",
+    "query": {
+      "city": "Алматы",
+      "category": "Ведущий",
+      "event_date": "2026-09-30",
+      "event_format": "корпоратив",
+      "budget_kzt": 1000000
+    },
+    "normalized_query": {
+      "city": "Алматы",
+      "event_date": "2026-09-30",
+      "event_format": "корпоратив",
+      "category": "Ведущий",
+      "budget_kzt": 1000000,
+      "duration_hours": null,
+      "language": null
+    },
+    "status": "MATCHED",
+    "ids": [
+      "HK-88430",
+      "HK-44923",
+      "HK-35215"
+    ],
+    "counts": {
+      "group": 10,
+      "matched": 6,
+      "shown": 3
+    },
+    "catalog_version": "catalog-v1:aaac66e28c0de68e1da437073395c9458283126a2eccaddd3364393c311a9597",
+    "ranking_version": "price-asc-canonical-id-v1",
+    "explanation_version": "evidence-v2:188022d49b965cd775e81255873887c225a8fa2eb88145e89b37757be86fe663",
+    "timing": {
+      "submit_to_render_ms": 46.099999997764826,
+      "fetch_to_json_ms": 11.899999998509884,
+      "json_to_render_ms": 33.19999999925494,
+      "raw": {
+        "key": "corporate-host:0",
+        "submitted_at_ms": 390.80000000074506,
+        "fetch_started_at_ms": 391.80000000074506,
+        "json_ready_at_ms": 403.69999999925494,
+        "rendered_at_ms": 436.8999999985099
+      }
+    }
+  },
+  "browser_errors": [],
+  "warm_summary": {
+    "submit_to_render": {
+      "samples": 5,
+      "raw_ms": [
+        54.69999999925494,
+        53.899999998509884,
+        53.600000001490116,
+        52.599999997764826,
+        82.19999999925494
+      ],
+      "min_ms": 52.599999997764826,
+      "max_ms": 82.19999999925494,
+      "mean_ms": 59.399999999254945,
+      "p50_ms": 53.899999998509884,
+      "p95_ms": 82.19999999925494
+    },
+    "fetch_to_json": {
+      "samples": 5,
+      "raw_ms": [
+        11.100000001490116,
+        13,
+        12.699999999254942,
+        12.599999997764826,
+        12.300000000745058
+      ],
+      "min_ms": 11.100000001490116,
+      "max_ms": 13,
+      "mean_ms": 12.339999999850988,
+      "p50_ms": 12.599999997764826,
+      "p95_ms": 13
+    }
+  },
+  "samples": [
+    {
+      "scenario": "corporate-host",
+      "kind": "scenario",
+      "query": {
+        "city": "Алматы",
+        "category": "Ведущий",
+        "event_date": "2026-09-30",
+        "event_format": "корпоратив",
+        "budget_kzt": 1000000
+      },
+      "normalized_query": {
+        "city": "Алматы",
+        "event_date": "2026-09-30",
+        "event_format": "корпоратив",
+        "category": "Ведущий",
+        "budget_kzt": 1000000,
+        "duration_hours": null,
+        "language": null
+      },
+      "status": "MATCHED",
+      "ids": [
+        "HK-88430",
+        "HK-44923",
+        "HK-35215"
+      ],
+      "counts": {
+        "group": 10,
+        "matched": 6,
+        "shown": 3
+      },
+      "catalog_version": "catalog-v1:aaac66e28c0de68e1da437073395c9458283126a2eccaddd3364393c311a9597",
+      "ranking_version": "price-asc-canonical-id-v1",
+      "explanation_version": "evidence-v2:188022d49b965cd775e81255873887c225a8fa2eb88145e89b37757be86fe663",
+      "timing": {
+        "submit_to_render_ms": 46.099999997764826,
+        "fetch_to_json_ms": 11.899999998509884,
+        "json_to_render_ms": 33.19999999925494,
+        "raw": {
+          "key": "corporate-host:0",
+          "submitted_at_ms": 390.80000000074506,
+          "fetch_started_at_ms": 391.80000000074506,
+          "json_ready_at_ms": 403.69999999925494,
+          "rendered_at_ms": 436.8999999985099
+        }
+      }
+    },
+    {
+      "scenario": "corporate-host-next-date",
+      "kind": "scenario",
+      "query": {
+        "city": "Алматы",
+        "category": "Ведущий",
+        "event_date": "2026-10-01",
+        "event_format": "корпоратив",
+        "budget_kzt": 1000000
+      },
+      "normalized_query": {
+        "city": "Алматы",
+        "event_date": "2026-10-01",
+        "event_format": "корпоратив",
+        "category": "Ведущий",
+        "budget_kzt": 1000000,
+        "duration_hours": null,
+        "language": null
+      },
+      "status": "MATCHED",
+      "ids": [
+        "HK-88430",
+        "HK-44923"
+      ],
+      "counts": {
+        "group": 10,
+        "matched": 2,
+        "shown": 2
+      },
+      "catalog_version": "catalog-v1:aaac66e28c0de68e1da437073395c9458283126a2eccaddd3364393c311a9597",
+      "ranking_version": "price-asc-canonical-id-v1",
+      "explanation_version": "evidence-v2:188022d49b965cd775e81255873887c225a8fa2eb88145e89b37757be86fe663",
+      "timing": {
+        "submit_to_render_ms": 48.80000000074506,
+        "fetch_to_json_ms": 11.300000000745058,
+        "json_to_render_ms": 37,
+        "raw": {
+          "key": "corporate-host-next-date:0",
+          "submitted_at_ms": 1806.300000000745,
+          "fetch_started_at_ms": 1806.800000000745,
+          "json_ready_at_ms": 1818.1000000014901,
+          "rendered_at_ms": 1855.1000000014901
+        }
+      }
+    },
+    {
+      "scenario": "rare-category",
+      "kind": "scenario",
+      "query": {
+        "city": "Алматы",
+        "category": "Декоратор",
+        "event_date": "2026-09-23",
+        "event_format": "корпоратив",
+        "budget_kzt": 2500000,
+        "duration_hours": 5
+      },
+      "normalized_query": {
+        "city": "Алматы",
+        "event_date": "2026-09-23",
+        "event_format": "корпоратив",
+        "category": "Декоратор",
+        "budget_kzt": 2500000,
+        "duration_hours": "5",
+        "language": null
+      },
+      "status": "MATCHED",
+      "ids": [
+        "HK-11484",
+        "HK-90004"
+      ],
+      "counts": {
+        "group": 3,
+        "matched": 2,
+        "shown": 2
+      },
+      "catalog_version": "catalog-v1:aaac66e28c0de68e1da437073395c9458283126a2eccaddd3364393c311a9597",
+      "ranking_version": "price-asc-canonical-id-v1",
+      "explanation_version": "evidence-v2:188022d49b965cd775e81255873887c225a8fa2eb88145e89b37757be86fe663",
+      "timing": {
+        "submit_to_render_ms": 47.69999999925494,
+        "fetch_to_json_ms": 10.800000000745058,
+        "json_to_render_ms": 36.5,
+        "raw": {
+          "key": "rare-category:0",
+          "submitted_at_ms": 3205.800000000745,
+          "fetch_started_at_ms": 3206.199999999255,
+          "json_ready_at_ms": 3217,
+          "rendered_at_ms": 3253.5
+        }
+      }
+    },
+    {
+      "scenario": "no-matches",
+      "kind": "scenario",
+      "query": {
+        "city": "Алматы",
+        "category": "Ведущий",
+        "event_date": "2026-09-30",
+        "event_format": "корпоратив",
+        "budget_kzt": 100000
+      },
+      "normalized_query": {
+        "city": "Алматы",
+        "event_date": "2026-09-30",
+        "event_format": "корпоратив",
+        "category": "Ведущий",
+        "budget_kzt": 100000,
+        "duration_hours": null,
+        "language": null
+      },
+      "status": "NO_MATCHES",
+      "ids": [],
+      "counts": {
+        "group": 10,
+        "matched": 0,
+        "shown": 0
+      },
+      "catalog_version": "catalog-v1:aaac66e28c0de68e1da437073395c9458283126a2eccaddd3364393c311a9597",
+      "ranking_version": "price-asc-canonical-id-v1",
+      "explanation_version": "evidence-v2:188022d49b965cd775e81255873887c225a8fa2eb88145e89b37757be86fe663",
+      "timing": {
+        "submit_to_render_ms": 50.399999998509884,
+        "fetch_to_json_ms": 11,
+        "json_to_render_ms": 39.100000001490116,
+        "raw": {
+          "key": "no-matches:0",
+          "submitted_at_ms": 4589.10000000149,
+          "fetch_started_at_ms": 4589.39999999851,
+          "json_ready_at_ms": 4600.39999999851,
+          "rendered_at_ms": 4639.5
+        }
+      }
+    },
+    {
+      "scenario": "no-category",
+      "kind": "scenario",
+      "query": {
+        "city": "Астана",
+        "category": "Декоратор",
+        "event_date": "2026-09-23",
+        "event_format": "корпоратив",
+        "budget_kzt": 2500000
+      },
+      "normalized_query": {
+        "city": "Астана",
+        "event_date": "2026-09-23",
+        "event_format": "корпоратив",
+        "category": "Декоратор",
+        "budget_kzt": 2500000,
+        "duration_hours": null,
+        "language": null
+      },
+      "status": "CATEGORY_UNAVAILABLE",
+      "ids": [],
+      "counts": {
+        "group": 0,
+        "matched": 0,
+        "shown": 0
+      },
+      "catalog_version": "catalog-v1:aaac66e28c0de68e1da437073395c9458283126a2eccaddd3364393c311a9597",
+      "ranking_version": "price-asc-canonical-id-v1",
+      "explanation_version": "evidence-v2:188022d49b965cd775e81255873887c225a8fa2eb88145e89b37757be86fe663",
+      "timing": {
+        "submit_to_render_ms": 47.099999997764826,
+        "fetch_to_json_ms": 11.5,
+        "json_to_render_ms": 35.30000000074506,
+        "raw": {
+          "key": "no-category:0",
+          "submitted_at_ms": 5805.60000000149,
+          "fetch_started_at_ms": 5805.89999999851,
+          "json_ready_at_ms": 5817.39999999851,
+          "rendered_at_ms": 5852.699999999255
+        }
+      }
+    },
+    {
+      "scenario": "venue-free",
+      "kind": "scenario",
+      "query": {
+        "city": "Астана",
+        "category": "Отель",
+        "event_date": "2026-09-23",
+        "event_format": "корпоратив",
+        "budget_kzt": 3000000,
+        "duration_hours": 5
+      },
+      "normalized_query": {
+        "city": "Астана",
+        "event_date": "2026-09-23",
+        "event_format": "корпоратив",
+        "category": "Отель",
+        "budget_kzt": 3000000,
+        "duration_hours": "5",
+        "language": null
+      },
+      "status": "MATCHED",
+      "ids": [
+        "HK-90012"
+      ],
+      "counts": {
+        "group": 1,
+        "matched": 1,
+        "shown": 1
+      },
+      "catalog_version": "catalog-v1:aaac66e28c0de68e1da437073395c9458283126a2eccaddd3364393c311a9597",
+      "ranking_version": "price-asc-canonical-id-v1",
+      "explanation_version": "evidence-v2:188022d49b965cd775e81255873887c225a8fa2eb88145e89b37757be86fe663",
+      "timing": {
+        "submit_to_render_ms": 50.80000000074506,
+        "fetch_to_json_ms": 11.300000000745058,
+        "json_to_render_ms": 39.100000001490116,
+        "raw": {
+          "key": "venue-free:0",
+          "submitted_at_ms": 7022.5,
+          "fetch_started_at_ms": 7022.89999999851,
+          "json_ready_at_ms": 7034.199999999255,
+          "rendered_at_ms": 7073.300000000745
+        }
+      }
+    },
+    {
+      "scenario": "venue-busy",
+      "kind": "scenario",
+      "query": {
+        "city": "Астана",
+        "category": "Отель",
+        "event_date": "2026-09-25",
+        "event_format": "корпоратив",
+        "budget_kzt": 3000000,
+        "duration_hours": 5
+      },
+      "normalized_query": {
+        "city": "Астана",
+        "event_date": "2026-09-25",
+        "event_format": "корпоратив",
+        "category": "Отель",
+        "budget_kzt": 3000000,
+        "duration_hours": "5",
+        "language": null
+      },
+      "status": "NO_MATCHES",
+      "ids": [],
+      "counts": {
+        "group": 1,
+        "matched": 0,
+        "shown": 0
+      },
+      "catalog_version": "catalog-v1:aaac66e28c0de68e1da437073395c9458283126a2eccaddd3364393c311a9597",
+      "ranking_version": "price-asc-canonical-id-v1",
+      "explanation_version": "evidence-v2:188022d49b965cd775e81255873887c225a8fa2eb88145e89b37757be86fe663",
+      "timing": {
+        "submit_to_render_ms": 46.79999999701977,
+        "fetch_to_json_ms": 10.399999998509884,
+        "json_to_render_ms": 36,
+        "raw": {
+          "key": "venue-busy:0",
+          "submitted_at_ms": 8272.60000000149,
+          "fetch_started_at_ms": 8273,
+          "json_ready_at_ms": 8283.39999999851,
+          "rendered_at_ms": 8319.39999999851
+        }
+      }
+    },
+    {
+      "scenario": "corporate-host",
+      "kind": "warm-repeat",
+      "query": {
+        "city": "Алматы",
+        "category": "Ведущий",
+        "event_date": "2026-09-30",
+        "event_format": "корпоратив",
+        "budget_kzt": 1000000
+      },
+      "normalized_query": {
+        "city": "Алматы",
+        "event_date": "2026-09-30",
+        "event_format": "корпоратив",
+        "category": "Ведущий",
+        "budget_kzt": 1000000,
+        "duration_hours": null,
+        "language": null
+      },
+      "status": "MATCHED",
+      "ids": [
+        "HK-88430",
+        "HK-44923",
+        "HK-35215"
+      ],
+      "counts": {
+        "group": 10,
+        "matched": 6,
+        "shown": 3
+      },
+      "catalog_version": "catalog-v1:aaac66e28c0de68e1da437073395c9458283126a2eccaddd3364393c311a9597",
+      "ranking_version": "price-asc-canonical-id-v1",
+      "explanation_version": "evidence-v2:188022d49b965cd775e81255873887c225a8fa2eb88145e89b37757be86fe663",
+      "timing": {
+        "submit_to_render_ms": 54.69999999925494,
+        "fetch_to_json_ms": 11.100000001490116,
+        "json_to_render_ms": 43.19999999925494,
+        "raw": {
+          "key": "corporate-host:1",
+          "submitted_at_ms": 9607.300000000745,
+          "fetch_started_at_ms": 9607.699999999255,
+          "json_ready_at_ms": 9618.800000000745,
+          "rendered_at_ms": 9662
+        }
+      }
+    },
+    {
+      "scenario": "corporate-host",
+      "kind": "warm-repeat",
+      "query": {
+        "city": "Алматы",
+        "category": "Ведущий",
+        "event_date": "2026-09-30",
+        "event_format": "корпоратив",
+        "budget_kzt": 1000000
+      },
+      "normalized_query": {
+        "city": "Алматы",
+        "event_date": "2026-09-30",
+        "event_format": "корпоратив",
+        "category": "Ведущий",
+        "budget_kzt": 1000000,
+        "duration_hours": null,
+        "language": null
+      },
+      "status": "MATCHED",
+      "ids": [
+        "HK-88430",
+        "HK-44923",
+        "HK-35215"
+      ],
+      "counts": {
+        "group": 10,
+        "matched": 6,
+        "shown": 3
+      },
+      "catalog_version": "catalog-v1:aaac66e28c0de68e1da437073395c9458283126a2eccaddd3364393c311a9597",
+      "ranking_version": "price-asc-canonical-id-v1",
+      "explanation_version": "evidence-v2:188022d49b965cd775e81255873887c225a8fa2eb88145e89b37757be86fe663",
+      "timing": {
+        "submit_to_render_ms": 53.899999998509884,
+        "fetch_to_json_ms": 13,
+        "json_to_render_ms": 40.599999997764826,
+        "raw": {
+          "key": "corporate-host:2",
+          "submitted_at_ms": 9837.5,
+          "fetch_started_at_ms": 9837.800000000745,
+          "json_ready_at_ms": 9850.800000000745,
+          "rendered_at_ms": 9891.39999999851
+        }
+      }
+    },
+    {
+      "scenario": "corporate-host",
+      "kind": "warm-repeat",
+      "query": {
+        "city": "Алматы",
+        "category": "Ведущий",
+        "event_date": "2026-09-30",
+        "event_format": "корпоратив",
+        "budget_kzt": 1000000
+      },
+      "normalized_query": {
+        "city": "Алматы",
+        "event_date": "2026-09-30",
+        "event_format": "корпоратив",
+        "category": "Ведущий",
+        "budget_kzt": 1000000,
+        "duration_hours": null,
+        "language": null
+      },
+      "status": "MATCHED",
+      "ids": [
+        "HK-88430",
+        "HK-44923",
+        "HK-35215"
+      ],
+      "counts": {
+        "group": 10,
+        "matched": 6,
+        "shown": 3
+      },
+      "catalog_version": "catalog-v1:aaac66e28c0de68e1da437073395c9458283126a2eccaddd3364393c311a9597",
+      "ranking_version": "price-asc-canonical-id-v1",
+      "explanation_version": "evidence-v2:188022d49b965cd775e81255873887c225a8fa2eb88145e89b37757be86fe663",
+      "timing": {
+        "submit_to_render_ms": 53.600000001490116,
+        "fetch_to_json_ms": 12.699999999254942,
+        "json_to_render_ms": 40.600000001490116,
+        "raw": {
+          "key": "corporate-host:3",
+          "submitted_at_ms": 10071.5,
+          "fetch_started_at_ms": 10071.800000000745,
+          "json_ready_at_ms": 10084.5,
+          "rendered_at_ms": 10125.10000000149
+        }
+      }
+    },
+    {
+      "scenario": "corporate-host",
+      "kind": "warm-repeat",
+      "query": {
+        "city": "Алматы",
+        "category": "Ведущий",
+        "event_date": "2026-09-30",
+        "event_format": "корпоратив",
+        "budget_kzt": 1000000
+      },
+      "normalized_query": {
+        "city": "Алматы",
+        "event_date": "2026-09-30",
+        "event_format": "корпоратив",
+        "category": "Ведущий",
+        "budget_kzt": 1000000,
+        "duration_hours": null,
+        "language": null
+      },
+      "status": "MATCHED",
+      "ids": [
+        "HK-88430",
+        "HK-44923",
+        "HK-35215"
+      ],
+      "counts": {
+        "group": 10,
+        "matched": 6,
+        "shown": 3
+      },
+      "catalog_version": "catalog-v1:aaac66e28c0de68e1da437073395c9458283126a2eccaddd3364393c311a9597",
+      "ranking_version": "price-asc-canonical-id-v1",
+      "explanation_version": "evidence-v2:188022d49b965cd775e81255873887c225a8fa2eb88145e89b37757be86fe663",
+      "timing": {
+        "submit_to_render_ms": 52.599999997764826,
+        "fetch_to_json_ms": 12.599999997764826,
+        "json_to_render_ms": 39.69999999925494,
+        "raw": {
+          "key": "corporate-host:4",
+          "submitted_at_ms": 10321.300000000745,
+          "fetch_started_at_ms": 10321.60000000149,
+          "json_ready_at_ms": 10334.199999999255,
+          "rendered_at_ms": 10373.89999999851
+        }
+      }
+    },
+    {
+      "scenario": "corporate-host",
+      "kind": "warm-repeat",
+      "query": {
+        "city": "Алматы",
+        "category": "Ведущий",
+        "event_date": "2026-09-30",
+        "event_format": "корпоратив",
+        "budget_kzt": 1000000
+      },
+      "normalized_query": {
+        "city": "Алматы",
+        "event_date": "2026-09-30",
+        "event_format": "корпоратив",
+        "category": "Ведущий",
+        "budget_kzt": 1000000,
+        "duration_hours": null,
+        "language": null
+      },
+      "status": "MATCHED",
+      "ids": [
+        "HK-88430",
+        "HK-44923",
+        "HK-35215"
+      ],
+      "counts": {
+        "group": 10,
+        "matched": 6,
+        "shown": 3
+      },
+      "catalog_version": "catalog-v1:aaac66e28c0de68e1da437073395c9458283126a2eccaddd3364393c311a9597",
+      "ranking_version": "price-asc-canonical-id-v1",
+      "explanation_version": "evidence-v2:188022d49b965cd775e81255873887c225a8fa2eb88145e89b37757be86fe663",
+      "timing": {
+        "submit_to_render_ms": 82.19999999925494,
+        "fetch_to_json_ms": 12.300000000745058,
+        "json_to_render_ms": 69.60000000149012,
+        "raw": {
+          "key": "corporate-host:5",
+          "submitted_at_ms": 10571.60000000149,
+          "fetch_started_at_ms": 10571.89999999851,
+          "json_ready_at_ms": 10584.199999999255,
+          "rendered_at_ms": 10653.800000000745
+        }
+      }
+    }
+  ]
+}

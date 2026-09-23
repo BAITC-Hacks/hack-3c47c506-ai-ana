@@ -1,5 +1,6 @@
 import { test, expect, type Page } from '@playwright/test'
 import type { RecommendationRequest, RecommendationResponse } from '../src/lib/api/generated'
+import { artifactPrefix } from './artifacts'
 
 const mainQuery: RecommendationRequest = {
  city: 'Алматы', category: 'Ведущий', event_format: 'корпоратив',
@@ -253,7 +254,7 @@ test('реальные карточки и логотип помещаются �
    .filter(element => element.getBoundingClientRect().right > innerWidth + 1)
    .map(element => ({ tag: element.tagName, cls: element.className, right: element.getBoundingClientRect().right })))
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), JSON.stringify({ width, overflow })).toBeTruthy()
-  await page.screenshot({ path: `../docs/screenshots/${process.env.PLAYWRIGHT_PRODUCTION === '1' ? 'stage7' : 'current'}-${width}.png`, fullPage: true })
+  await page.screenshot({ path: `../docs/screenshots/${artifactPrefix}-${width}.png`, fullPage: true })
  }
  expect(errors).toEqual([])
 })
@@ -283,7 +284,7 @@ test('кнопки примеров отправляют запросы, пус�
    for (const width of [390, 320]) {
     await page.setViewportSize({ width, height: 1000 })
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBeTruthy()
-    await page.screenshot({ path: `../docs/screenshots/stage7-${status.toLowerCase()}-${width}.png`, fullPage: true })
+    await page.screenshot({ path: `../docs/screenshots/${artifactPrefix}-${status.toLowerCase()}-${width}.png`, fullPage: true })
    }
   }
  }
