@@ -46,7 +46,9 @@ export function AppearanceSettings() {
   useEffect(() => {
     const root = document.documentElement
     root.style.setProperty('--accent', accent)
-    root.style.setProperty('--on-accent', onAccent(accent))
+    const foreground = onAccent(accent)
+    root.style.setProperty('--on-accent', foreground)
+    root.style.setProperty('--accent-interaction-target', foreground === '#FFFFFF' ? '#000000' : '#FFFFFF')
     try {
       localStorage.setItem(storageKey, accent)
       setStorageAvailable(true)

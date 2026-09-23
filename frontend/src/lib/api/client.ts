@@ -4,6 +4,8 @@ import type {
   RecommendationRequest,
   RecommendationResponse,
 } from './generated'
+import type { ZodType } from 'zod'
+import { catalogMetadataSchema, recommendationResponseSchema } from './response-schema'
 
 export class ApiError extends Error {
   readonly status: number
@@ -29,7 +31,7 @@ function isApiError(value: unknown): value is ErrorResponse {
       && typeof issue.field === 'string' && typeof issue.message === 'string')))
 }
 
-async function request<T>(path: string, options: RequestInit): Promise<T> {
+async function request<T>(path: string, options: RequestInit, schema: ZodType<T>): Promise<T> {
   const response = await fetch(path, options)
   let payload: unknown
   try {
@@ -45,12 +47,18 @@ async function request<T>(path: string, options: RequestInit): Promise<T> {
       code: 'INTERNAL_ERROR', message: 'Сервис подбора временно недоступен.',
     })
   }
-  // Successful payloads are validated by the server's response_model.
+  if (!schema.safeParse(payload).success) {
+    throw new ApiError(response.status, {
+      code: 'INTERNAL_ERROR',
+      message: 'Сервер вернул ответ в неизвестном формате. Повторите запрос позже.',
+    })
+  }
+  // Validate without transforming the response or removing additional API fields.
   return payload as T
 }
 
 export function getCatalogMetadata(signal?: AbortSignal): Promise<CatalogMetadata> {
-  return request('/api/catalog/meta', { signal })
+  return request('/api/catalog/meta', { signal }, catalogMetadataSchema)
 }
 
 export function getRecommendations(
@@ -62,5 +70,5 @@ export function getRecommendations(
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(query),
     signal,
-  })
+  }, recommendationResponseSchema)
 }
