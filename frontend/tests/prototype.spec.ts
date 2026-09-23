@@ -216,9 +216,9 @@ test('цвет сохраняется без нового подбора и по
  await expect(page.getByLabel('Свой цвет', { exact: true })).toHaveValue('#2563EB')
 })
 
-test('повреждённое и недоступное хранилище не мешают оформлению и реальному подбору', async ({ browser }) => {
+test('повреждённое и недоступное хранилище не мешают оформлению и реальному подбору', async ({ browser, baseURL }) => {
  for (const mode of ['corrupt', 'unavailable'] as const) {
-  const context = await browser.newContext({ baseURL: 'http://127.0.0.1:5174' })
+  const context = await browser.newContext({ baseURL })
   await context.addInitScript(storageMode => {
    if (storageMode === 'corrupt') window.localStorage.setItem('ai-ana-accent', 'not-a-color')
    else Object.defineProperty(window, 'localStorage', { get() { throw new Error('Storage unavailable') } })
@@ -253,7 +253,38 @@ test('реальные карточки и логотип помещаются �
    .filter(element => element.getBoundingClientRect().right > innerWidth + 1)
    .map(element => ({ tag: element.tagName, cls: element.className, right: element.getBoundingClientRect().right })))
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), JSON.stringify({ width, overflow })).toBeTruthy()
-  await page.screenshot({ path: `../docs/screenshots/stage6-${width}.png`, fullPage: true })
+  await page.screenshot({ path: `../docs/screenshots/${process.env.PLAYWRIGHT_PRODUCTION === '1' ? 'stage7' : 'current'}-${width}.png`, fullPage: true })
  }
  expect(errors).toEqual([])
+})
+
+test('кнопки примеров отправляют запросы, пустые состояния читаются на телефоне', async ({ page }) => {
+ await page.setViewportSize({ width: 390, height: 1000 })
+ await openApplication(page)
+ for (const [label, status, category, count] of [
+  ['Ведущие в Алматы', 'MATCHED', 'Ведущий', 3],
+  ['Редкая категория', 'MATCHED', 'Декоратор', 2],
+  ['Небольшой бюджет', 'NO_MATCHES', 'Ведущий', 0],
+  ['Декораторы в Астане', 'CATEGORY_UNAVAILABLE', 'Декоратор', 0],
+ ] as const) {
+  const response = page.waitForResponse(result => result.url().endsWith('/api/recommendations') && result.request().method() === 'POST')
+  await page.getByRole('button', { name: label, exact: true }).click()
+  const result = await response
+  expect(result.status()).toBe(200)
+  const body = await result.json() as RecommendationResponse
+  expect(body.status).toBe(status)
+  expect(body.query.category).toBe(category)
+  await expect(page.getByLabel('Кого ищем', { exact: true })).toHaveValue(category)
+  await expect(cards(page)).toHaveCount(count)
+  if (status !== 'MATCHED') {
+   const state = page.locator(`.result-state[data-status="${status}"]`)
+   await expect(state).toBeVisible()
+   await expect(state).toContainText(body.message)
+   for (const width of [390, 320]) {
+    await page.setViewportSize({ width, height: 1000 })
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBeTruthy()
+    await page.screenshot({ path: `../docs/screenshots/stage7-${status.toLowerCase()}-${width}.png`, fullPage: true })
+   }
+  }
+ }
 })

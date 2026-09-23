@@ -1,0 +1,37 @@
+{
+  "scope": "Сравнение снимков с одинаковыми исходными карточками и раскрытыми основаниями; исторические файлы не перезаписывались.",
+  "comparisons": [
+    {
+      "width": 1440,
+      "reference": "docs/screenshots/stage6-1440.png",
+      "current": "docs/screenshots/stage7-1440.png",
+      "reference_sha256": "4484c84918602b8435515218c67328f511caf316b14dc474feadea4c9724836f",
+      "current_sha256": "4484c84918602b8435515218c67328f511caf316b14dc474feadea4c9724836f",
+      "identical_png_files": true
+    },
+    {
+      "width": 768,
+      "reference": "docs/screenshots/stage6-768.png",
+      "current": "docs/screenshots/stage7-768.png",
+      "reference_sha256": "e02b0f10c72fe88b5af4ae66e3004442624fb69388d3c431505888bc62f8ccb7",
+      "current_sha256": "e02b0f10c72fe88b5af4ae66e3004442624fb69388d3c431505888bc62f8ccb7",
+      "identical_png_files": true
+    },
+    {
+      "width": 390,
+      "reference": "docs/screenshots/stage6-390.png",
+      "current": "docs/screenshots/stage7-390.png",
+      "reference_sha256": "f0ce6aa1472b23709aeaa9f0c314a6cb708652b50c4ba3410fcd435f992497fb",
+      "current_sha256": "f0ce6aa1472b23709aeaa9f0c314a6cb708652b50c4ba3410fcd435f992497fb",
+      "identical_png_files": true
+    },
+    {
+      "width": 320,
+      "reference": "docs/screenshots/stage6-320.png",
+      "current": "docs/screenshots/stage7-320.png",
+      "reference_sha256": "7abedfe52b9c942d82563c9bba32de1a4893609c182c01fc82c59d9aa9aea115",
+      "current_sha256": "7abedfe52b9c942d82563c9bba32de1a4893609c182c01fc82c59d9aa9aea115",
+      "identical_png_files": true
+    }
+  ]
+}
